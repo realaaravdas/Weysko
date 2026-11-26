@@ -3,7 +3,7 @@ pub mod element;
 pub mod project;
 pub mod theme;
 
-pub use asset::AssetItem;
+pub use asset::{mime_from_extension, AssetItem};
 pub use element::{
     AccordionItem, BorderStyle, BoxShadowPreset, Element, ElementBgType, ElementContent,
     ElementKind, ElementStyle, EntranceAnimation, FooterColumn, FormActionMode, FormField,
@@ -11,6 +11,6 @@ pub use element::{
     SocialPlatform, TextAlign,
 };
 pub use project::{
-    MobileLayoutMode, Page, Section, SectionBackground, SiteProject, ViewportMode,
+    sanitize_slug, MobileLayoutMode, Page, Section, SectionBackground, SiteProject, ViewportMode,
 };
-pub use theme::{ColorPalette, DesignTokens, PresetTheme, TypographyTokens};
+pub use theme::{available_font_families, ColorPalette, DesignTokens, PresetTheme, TypographyTokens};
