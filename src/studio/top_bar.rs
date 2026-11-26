@@ -23,17 +23,45 @@ pub fn draw_top_bar(ctx: &egui::Context, state: &mut StudioState) {
         )
         .show(ctx, |ui| {
             ui.horizontal_centered(|ui| {
-                // Brand Monogram + Wordmark
-                Frame::new()
-                    .fill(WHITE)
-                    .corner_radius(CornerRadius::same(6))
-                    .inner_margin(Margin::symmetric(8, 4))
-                    .show(ui, |ui| {
-                        ui.label(RichText::new("W").color(SLATE_INK).strong().size(13.0));
-                    });
+                // Vector Brand Mark + Wordmark
+                let (mark_rect, _) =
+                    ui.allocate_exact_size(egui::vec2(26.0, 22.0), egui::Sense::hover());
+                super::branding::paint_logo_mark(
+                    ui.painter(),
+                    mark_rect,
+                    WHITE,
+                    Color32::from_rgb(0, 188, 235),
+                );
                 ui.label(RichText::new("WEBSIR").color(WHITE).strong().size(13.5));
 
-                ui.add_space(6.0);
+                ui.menu_button(RichText::new("File").color(TEXT_MUTED).size(12.0), |ui| {
+                    if ui.button("New Blank Site").clicked() {
+                        state.apply_template(crate::templates::StarterTemplate::BlankCanvas);
+                        ui.close_menu();
+                    }
+                    if ui.button("Open Project...").clicked() {
+                        open_project_dialog(state);
+                        ui.close_menu();
+                    }
+                    ui.separator();
+                    if ui.button("Save (Ctrl+S)").clicked() {
+                        save_project_dialog(state, false);
+                        ui.close_menu();
+                    }
+                    if ui.button("Save As... (Ctrl+Shift+S)").clicked() {
+                        save_project_dialog(state, true);
+                        ui.close_menu();
+                    }
+                    ui.separator();
+                    if ui.button("Export / Publish...").clicked() {
+                        state.google_sites_embed_cache =
+                            generate_google_sites_embed(&state.project);
+                        state.show_export_modal = true;
+                        ui.close_menu();
+                    }
+                });
+
+                ui.add_space(4.0);
                 separator_v(ui);
                 ui.add_space(4.0);
 
@@ -133,6 +161,16 @@ pub fn draw_top_bar(ctx: &egui::Context, state: &mut StudioState) {
                 if ghost_button(ui, "+", false).on_hover_text("Zoom in").clicked() {
                     state.zoom = (state.zoom + 0.1).min(1.5);
                 }
+                if ghost_button(ui, "Fit", false)
+                    .on_hover_text("Fit canvas to workspace")
+                    .clicked()
+                {
+                    state.zoom = match state.viewport {
+                        ViewportMode::Desktop => 0.72,
+                        ViewportMode::Tablet => 0.95,
+                        ViewportMode::Mobile => 1.0,
+                    };
+                }
 
                 if ghost_button(ui, "Grid", state.show_grid)
                     .on_hover_text("Toggle canvas dot grid")
@@ -147,12 +185,19 @@ pub fn draw_top_bar(ctx: &egui::Context, state: &mut StudioState) {
                     state.snap_to_grid = !state.snap_to_grid;
                 }
 
-                // Right-aligned Undo/Redo, Save/Open, Live Preview, Export CTA
+                // Right-aligned Undo/Redo, Save/Open, Live Preview, Shortcuts, Export CTA
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                     if primary_white_button(ui, "Export / Publish").clicked() {
                         state.google_sites_embed_cache =
                             generate_google_sites_embed(&state.project);
                         state.show_export_modal = true;
+                    }
+
+                    if ghost_button(ui, "?", state.show_shortcuts_modal)
+                        .on_hover_text("Keyboard shortcuts & quick guide (F1)")
+                        .clicked()
+                    {
+                        state.show_shortcuts_modal = !state.show_shortcuts_modal;
                     }
 
                     let preview_label = if state.preview_server.is_some() {

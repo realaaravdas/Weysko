@@ -553,6 +553,7 @@ fn draw_theme_drawer(ui: &mut Ui, state: &mut StudioState) {
     }
 
     section_heading(ui, "Global Color Palette");
+    let before = state.project.clone();
     let mut changed = false;
     {
         let pal = &mut state.project.theme.palette;
@@ -647,7 +648,7 @@ fn draw_theme_drawer(ui: &mut Ui, state: &mut StudioState) {
         .changed();
 
     if changed {
-        state.mark_mutated();
+        state.record_undo_from(before);
     }
 }
 

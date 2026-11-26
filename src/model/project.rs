@@ -260,8 +260,6 @@ pub fn sanitize_slug(input: &str) -> String {
         .map(|c| {
             if c.is_ascii_alphanumeric() {
                 c
-            } else if c == ' ' || c == '_' || c == '-' {
-                '-'
             } else {
                 '-'
             }

@@ -1,7 +1,10 @@
 [package]
 name = "websir"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
+license = "MIT"
+repository = "https://github.com/realaaravdas/Websir"
+homepage = "https://realaaravdas.github.io/Websir/"
 description = "Pure-Rust, zero-AI visual website studio and static site generator with a dark minimalist slate UI"
 
 [dependencies]

@@ -99,6 +99,7 @@ fn draw_element_inspector(ui: &mut Ui, state: &mut StudioState, el_id: &str) {
     }
 
     // Re-borrow cleanly after potential early return above
+    let before = state.project.clone();
     let Some(page) = state.project.find_page_mut(&page_id) else {
         return;
     };
@@ -138,7 +139,7 @@ fn draw_element_inspector(ui: &mut Ui, state: &mut StudioState, el_id: &str) {
     }
 
     if changed {
-        state.mark_mutated();
+        state.record_undo_from(before);
     }
 }
 
@@ -684,17 +685,19 @@ fn draw_element_layout_tab(ui: &mut Ui, el: &mut Element, viewport: ViewportMode
             ui.end_row();
         });
 
-    if viewport == ViewportMode::Tablet && el.tablet_rect.is_some() {
-        if ui.small_button("Reset Tablet Override").clicked() {
-            el.tablet_rect = None;
-            changed = true;
-        }
+    if viewport == ViewportMode::Tablet
+        && el.tablet_rect.is_some()
+        && ui.small_button("Reset Tablet Override").clicked()
+    {
+        el.tablet_rect = None;
+        changed = true;
     }
-    if viewport == ViewportMode::Mobile && el.mobile_rect.is_some() {
-        if ui.small_button("Reset Mobile Override").clicked() {
-            el.mobile_rect = None;
-            changed = true;
-        }
+    if viewport == ViewportMode::Mobile
+        && el.mobile_rect.is_some()
+        && ui.small_button("Reset Mobile Override").clicked()
+    {
+        el.mobile_rect = None;
+        changed = true;
     }
 
     changed |= ui.checkbox(&mut el.full_width, "Full Width (100% strip)").changed();
@@ -1006,6 +1009,7 @@ fn draw_element_effects_tab(ui: &mut Ui, el: &mut Element) -> bool {
 }
 
 fn draw_section_inspector(ui: &mut Ui, state: &mut StudioState, sec_id: &str) {
+    let before = state.project.clone();
     let page_id = state.selected_page_id.clone();
     let assets: Vec<(String, String)> = state
         .project
@@ -1161,7 +1165,7 @@ fn draw_section_inspector(ui: &mut Ui, state: &mut StudioState, sec_id: &str) {
         });
 
     if changed {
-        state.mark_mutated();
+        state.record_undo_from(before);
     }
 
     section_heading(ui, "Section Actions");
@@ -1217,6 +1221,7 @@ enum SecAction {
 }
 
 fn draw_page_site_inspector(ui: &mut Ui, state: &mut StudioState) {
+    let before = state.project.clone();
     section_heading(ui, "Site Settings");
     let mut changed = false;
     ui.label(RichText::new("Production Base URL (for sitemap.xml)").color(TEXT_MUTED).size(11.5));
@@ -1258,6 +1263,6 @@ fn draw_page_site_inspector(ui: &mut Ui, state: &mut StudioState) {
     }
 
     if changed {
-        state.mark_mutated();
+        state.record_undo_from(before);
     }
 }

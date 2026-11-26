@@ -72,7 +72,7 @@ pub fn export_to_zip(
     for (rel_path, bytes) in &site.files {
         writer
             .start_file(rel_path, zip_opts)
-            .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
+            .map_err(io::Error::other)?;
         writer.write_all(bytes)?;
         total_bytes += bytes.len();
         file_count += 1;
@@ -80,7 +80,7 @@ pub fn export_to_zip(
 
     writer
         .finish()
-        .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
+        .map_err(io::Error::other)?;
 
     Ok(ExportSummary {
         destination: zip_path.to_path_buf(),

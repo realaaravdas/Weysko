@@ -19,6 +19,9 @@ pub fn draw_modals_and_toasts(ctx: &egui::Context, state: &mut StudioState) {
     if state.show_pages_modal {
         draw_pages_modal(ctx, state);
     }
+    if state.show_shortcuts_modal {
+        draw_shortcuts_modal(ctx, state);
+    }
     draw_toast(ctx, state);
 }
 
@@ -363,6 +366,48 @@ enum PageModalAction {
     Delete(String),
     Duplicate(String),
     Swap(usize, usize),
+}
+
+fn draw_shortcuts_modal(ctx: &egui::Context, state: &mut StudioState) {
+    let mut open = state.show_shortcuts_modal;
+    egui::Window::new("Keyboard Shortcuts & Quick Guide")
+        .open(&mut open)
+        .collapsible(false)
+        .resizable(false)
+        .anchor(Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
+        .fixed_size(egui::vec2(460.0, 390.0))
+        .frame(
+            Frame::new()
+                .fill(BG_PANEL)
+                .stroke(Stroke::new(1.0_f32, BORDER_STRONG))
+                .corner_radius(CornerRadius::same(12))
+                .inner_margin(Margin::same(18)),
+        )
+        .show(ctx, |ui| {
+            section_heading(ui, "Canvas & Editing");
+            for (keys, desc) in [
+                ("Double-Click Text", "Edit Heading, Paragraph, Button, or Badge inline"),
+                ("Drag / 8-Point Handles", "Move or resize with 8px grid snap & smart guides"),
+                ("Right-Click Element/Strip", "Context menu for z-order, lock, duplicate, insert"),
+                ("Arrow / Shift+Arrow", "Nudge selected element 1px / 10px"),
+                ("Ctrl+Z / Ctrl+Y", "Undo / Redo"),
+                ("Ctrl+C / Ctrl+V / Ctrl+D", "Copy / Paste / Duplicate element"),
+                ("Delete / Backspace", "Delete selected element"),
+                ("Ctrl+S / Ctrl+Shift+S", "Save / Save As (.websir.json)"),
+                ("Ctrl+= / Ctrl+- / Ctrl+0", "Zoom in / out / reset 85%"),
+                ("F1", "Toggle this shortcuts reference"),
+            ] {
+                ui.horizontal(|ui| {
+                    ui.label(
+                        RichText::new(format!("{:<24}", keys))
+                            .font(egui::FontId::monospace(11.5))
+                            .color(WHITE),
+                    );
+                    ui.label(RichText::new(desc).color(TEXT_MUTED).size(11.5));
+                });
+            }
+        });
+    state.show_shortcuts_modal = open;
 }
 
 fn draw_toast(ctx: &egui::Context, state: &mut StudioState) {

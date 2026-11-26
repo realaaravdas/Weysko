@@ -153,6 +153,8 @@ pub struct StudioState {
     pub last_export_folder: Option<PathBuf>,
     pub google_sites_embed_cache: String,
     pub show_pages_modal: bool,
+    pub show_shortcuts_modal: bool,
+    pub last_inspector_undo_at: Option<Instant>,
     pub new_page_draft: NewPageDraft,
     pub confirm_template: Option<StarterTemplate>,
     pub toast: Option<ToastMessage>,
@@ -198,6 +200,8 @@ impl StudioState {
             last_export_folder: None,
             google_sites_embed_cache: String::new(),
             show_pages_modal: false,
+            show_shortcuts_modal: false,
+            last_inspector_undo_at: None,
             new_page_draft: NewPageDraft {
                 title: "Services".into(),
                 slug: "services".into(),
@@ -219,6 +223,59 @@ impl StudioState {
     pub fn mark_mutated(&mut self) {
         self.dirty = true;
         self.preview_dirty = true;
+    }
+
+    /// Coalesces rapid inspector/theme mutations into clean undo snapshots.
+    pub fn record_undo_from(&mut self, before: SiteProject) {
+        let should_push = match self.last_inspector_undo_at {
+            None => true,
+            Some(ts) => ts.elapsed().as_secs_f32() > 1.0,
+        };
+        if should_push && before != self.project {
+            self.history.push(before);
+            self.last_inspector_undo_at = Some(Instant::now());
+        }
+        self.dirty = true;
+        self.preview_dirty = true;
+    }
+
+    pub fn bring_element_to_front(&mut self, el_id: &str) {
+        self.push_undo_snapshot();
+        if let Some(page) = self.project.find_page_mut(&self.selected_page_id) {
+            for sec in &mut page.sections {
+                if sec.elements.iter().any(|e| e.id == el_id) {
+                    let top_z = sec.next_z_index();
+                    if let Some(el) = sec.elements.iter_mut().find(|e| e.id == el_id) {
+                        el.z_index = top_z;
+                    }
+                    return;
+                }
+            }
+        }
+    }
+
+    pub fn send_element_to_back(&mut self, el_id: &str) {
+        self.push_undo_snapshot();
+        if let Some(page) = self.project.find_page_mut(&self.selected_page_id) {
+            for sec in &mut page.sections {
+                if sec.elements.iter().any(|e| e.id == el_id) {
+                    let min_z = sec.elements.iter().map(|e| e.z_index).min().unwrap_or(1);
+                    if let Some(el) = sec.elements.iter_mut().find(|e| e.id == el_id) {
+                        el.z_index = (min_z - 1).max(0);
+                    }
+                    return;
+                }
+            }
+        }
+    }
+
+    pub fn toggle_element_lock(&mut self, el_id: &str) {
+        self.push_undo_snapshot();
+        if let Some(page) = self.project.find_page_mut(&self.selected_page_id) {
+            if let Some(el) = page.find_element_mut(el_id) {
+                el.locked = !el.locked;
+            }
+        }
     }
 
     pub fn undo(&mut self) {

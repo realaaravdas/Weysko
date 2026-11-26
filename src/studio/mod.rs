@@ -1,3 +1,4 @@
+pub mod branding;
 pub mod canvas;
 pub mod inspector;
 pub mod left_panel;
@@ -102,8 +103,27 @@ impl WebsirApp {
             return;
         }
 
+        if ctx.input(|i| i.key_pressed(egui::Key::F1)) {
+            self.state.show_shortcuts_modal = !self.state.show_shortcuts_modal;
+            return;
+        }
+        if ctrl && ctx.input(|i| i.key_pressed(egui::Key::Num0)) {
+            self.state.zoom = 0.85;
+            return;
+        }
+        if ctrl && ctx.input(|i| i.key_pressed(egui::Key::Equals) || i.key_pressed(egui::Key::Plus)) {
+            self.state.zoom = (self.state.zoom + 0.1).min(1.5);
+            return;
+        }
+        if ctrl && ctx.input(|i| i.key_pressed(egui::Key::Minus)) {
+            self.state.zoom = (self.state.zoom - 0.1).max(0.45);
+            return;
+        }
+
         if ctx.input(|i| i.key_pressed(egui::Key::Escape)) {
-            if self.state.show_export_modal {
+            if self.state.show_shortcuts_modal {
+                self.state.show_shortcuts_modal = false;
+            } else if self.state.show_export_modal {
                 self.state.show_export_modal = false;
             } else if self.state.show_pages_modal {
                 self.state.show_pages_modal = false;

@@ -29,6 +29,13 @@ enum CanvasAction {
     SelectSection(String),
     StartInlineEdit(String, String),
     AppendBlankSection,
+    AddElementInSection(String, ElementKind),
+    DuplicateElement(String),
+    CopyElement(String),
+    BringToFront(String),
+    SendToBack(String),
+    ToggleLock(String),
+    DeleteElement(String),
 }
 
 /// Renders the interactive Wix-style WYSIWYG artboard with drag/resize, smart guides, and inline text editing.
@@ -54,6 +61,7 @@ pub fn draw_canvas(ctx: &egui::Context, state: &mut StudioState) {
             let artboard_w_screen = vp_width * zoom;
             let theme = state.project.theme.clone();
             let assets = state.project.assets.clone();
+            let all_pages = state.project.pages.clone();
 
             let mut pending_action: Option<CanvasAction> = None;
             let mut active_guides: Vec<GuideLine> = Vec::new();
@@ -271,15 +279,44 @@ pub fn draw_canvas(ctx: &egui::Context, state: &mut StudioState) {
                                         &state.textures,
                                         &assets,
                                         &theme.palette,
-                                        &page_snapshot,
+                                        &all_pages,
                                     );
 
-                                    // Element interaction (click / double-click / drag)
+                                    // Element interaction (click / double-click / drag / right-click)
                                     let el_resp = ui.interact(
                                         el_screen_rect,
                                         ui.make_persistent_id(format!("el_hit_{}", el.id)),
                                         Sense::click_and_drag(),
                                     );
+                                    el_resp.context_menu(|ui| {
+                                        if ui.button("Duplicate (Ctrl+D)").clicked() {
+                                            pending_action = Some(CanvasAction::DuplicateElement(el.id.clone()));
+                                            ui.close_menu();
+                                        }
+                                        if ui.button("Copy (Ctrl+C)").clicked() {
+                                            pending_action = Some(CanvasAction::CopyElement(el.id.clone()));
+                                            ui.close_menu();
+                                        }
+                                        ui.separator();
+                                        if ui.button("Bring to Front").clicked() {
+                                            pending_action = Some(CanvasAction::BringToFront(el.id.clone()));
+                                            ui.close_menu();
+                                        }
+                                        if ui.button("Send to Back").clicked() {
+                                            pending_action = Some(CanvasAction::SendToBack(el.id.clone()));
+                                            ui.close_menu();
+                                        }
+                                        let lock_lbl = if el.locked { "Unlock Position" } else { "Lock Position" };
+                                        if ui.button(lock_lbl).clicked() {
+                                            pending_action = Some(CanvasAction::ToggleLock(el.id.clone()));
+                                            ui.close_menu();
+                                        }
+                                        ui.separator();
+                                        if ui.button(RichText::new("Delete").color(DANGER_INK)).clicked() {
+                                            pending_action = Some(CanvasAction::DeleteElement(el.id.clone()));
+                                            ui.close_menu();
+                                        }
+                                    });
 
                                     if el_resp.hovered() && hover_cursor.is_none() {
                                         hover_cursor = Some(if el.locked {
@@ -428,10 +465,49 @@ pub fn draw_canvas(ctx: &egui::Context, state: &mut StudioState) {
                                     }
                                 }
 
-                                // Clicking empty section selects section
+                                // Clicking or right-clicking empty section
                                 if !clicked_element && sec_resp.clicked() {
                                     pending_action = Some(CanvasAction::SelectSection(sec.id.clone()));
                                 }
+                                sec_resp.context_menu(|ui| {
+                                    if ui.button("Add Heading").clicked() {
+                                        pending_action = Some(CanvasAction::AddElementInSection(
+                                            sec.id.clone(),
+                                            ElementKind::Heading,
+                                        ));
+                                        ui.close_menu();
+                                    }
+                                    if ui.button("Add Paragraph").clicked() {
+                                        pending_action = Some(CanvasAction::AddElementInSection(
+                                            sec.id.clone(),
+                                            ElementKind::Paragraph,
+                                        ));
+                                        ui.close_menu();
+                                    }
+                                    if ui.button("Add Button").clicked() {
+                                        pending_action = Some(CanvasAction::AddElementInSection(
+                                            sec.id.clone(),
+                                            ElementKind::Button,
+                                        ));
+                                        ui.close_menu();
+                                    }
+                                    if ui.button("Add Card").clicked() {
+                                        pending_action = Some(CanvasAction::AddElementInSection(
+                                            sec.id.clone(),
+                                            ElementKind::Card,
+                                        ));
+                                        ui.close_menu();
+                                    }
+                                    ui.separator();
+                                    if ui.button("Duplicate Section").clicked() {
+                                        pending_action = Some(CanvasAction::DuplicateSection(sec.id.clone()));
+                                        ui.close_menu();
+                                    }
+                                    if ui.button(RichText::new("Delete Section").color(DANGER_INK)).clicked() {
+                                        pending_action = Some(CanvasAction::DeleteSection(sec.id.clone()));
+                                        ui.close_menu();
+                                    }
+                                });
 
                                 // Section outline & floating section toolbar
                                 let sec_hovered = sec_resp.hovered();
@@ -515,6 +591,66 @@ pub fn draw_canvas(ctx: &egui::Context, state: &mut StudioState) {
                 ctx.set_cursor_icon(c);
             }
 
+            // Live coordinate HUD pill while dragging or resizing
+            if let Some(drag) = &state.drag_mode {
+                if let Some(ptr) = ctx.pointer_interact_pos() {
+                    let hud_text = match drag {
+                        DragMode::MoveElement { element_id, .. }
+                        | DragMode::ResizeElement { element_id, .. } => {
+                            state
+                                .project
+                                .find_page(&state.selected_page_id)
+                                .and_then(|p| p.find_element(element_id))
+                                .map(|(_, e)| {
+                                    let r = match vp {
+                                        ViewportMode::Desktop => e.rect,
+                                        ViewportMode::Tablet => e.tablet_rect.unwrap_or(e.rect),
+                                        ViewportMode::Mobile => e.mobile_rect.unwrap_or(e.rect),
+                                    };
+                                    format!(
+                                        "X: {}  Y: {}  |  {} × {}",
+                                        r.x.round() as i32,
+                                        r.y.round() as i32,
+                                        r.w.round() as i32,
+                                        r.h.round() as i32
+                                    )
+                                })
+                                .unwrap_or_default()
+                        }
+                        DragMode::ResizeSection { section_id, .. } => {
+                            state
+                                .project
+                                .find_page(&state.selected_page_id)
+                                .and_then(|p| p.find_section(section_id))
+                                .map(|s| format!("Section Height: {}px", s.height.round() as i32))
+                                .unwrap_or_default()
+                        }
+                    };
+                    if !hud_text.is_empty() {
+                        let hud_pos = ptr + egui::vec2(14.0, 16.0);
+                        let painter = ctx.layer_painter(egui::LayerId::new(
+                            egui::Order::Tooltip,
+                            egui::Id::new("websir_drag_hud"),
+                        ));
+                        let rect = Rect::from_min_size(hud_pos, egui::vec2(176.0, 24.0));
+                        painter.rect_filled(rect, CornerRadius::same(5), BG_PANEL);
+                        painter.rect_stroke(
+                            rect,
+                            CornerRadius::same(5),
+                            Stroke::new(1.0_f32, WHITE),
+                            egui::StrokeKind::Inside,
+                        );
+                        painter.text(
+                            rect.center(),
+                            Align2::CENTER_CENTER,
+                            hud_text,
+                            FontId::monospace(10.5),
+                            WHITE,
+                        );
+                    }
+                }
+            }
+
             // Apply deferred canvas actions cleanly outside immutable borrows
             if let Some(act) = pending_action {
                 apply_canvas_action(state, act);
@@ -581,6 +717,29 @@ fn apply_canvas_action(state: &mut StudioState, act: CanvasAction) {
                 state.selected_section_id = Some(sid);
                 state.selected_element_id = None;
             }
+        }
+        CanvasAction::AddElementInSection(sid, kind) => {
+            state.selected_section_id = Some(sid);
+            state.insert_element(kind);
+        }
+        CanvasAction::DuplicateElement(eid) => {
+            state.selected_element_id = Some(eid);
+            state.duplicate_selected_element();
+        }
+        CanvasAction::CopyElement(eid) => {
+            if let Some(page) = state.project.find_page(&page_id) {
+                if let Some((_, el)) = page.find_element(&eid) {
+                    state.clipboard_element = Some(el.clone());
+                    state.notify("Copied element", false);
+                }
+            }
+        }
+        CanvasAction::BringToFront(eid) => state.bring_element_to_front(&eid),
+        CanvasAction::SendToBack(eid) => state.send_element_to_back(&eid),
+        CanvasAction::ToggleLock(eid) => state.toggle_element_lock(&eid),
+        CanvasAction::DeleteElement(eid) => {
+            state.selected_element_id = Some(eid);
+            state.delete_selected_element();
         }
     }
 }
@@ -807,9 +966,9 @@ fn draw_inline_editor(ui: &mut Ui, state: &mut StudioState, rect: Rect, el: &Ele
 
             if ui.input(|i| i.key_pressed(egui::Key::Escape)) {
                 cancel = true;
-            } else if el.kind != ElementKind::Paragraph && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
-                commit = true;
-            } else if resp.lost_focus() {
+            } else if (el.kind != ElementKind::Paragraph && ui.input(|i| i.key_pressed(egui::Key::Enter)))
+                || resp.lost_focus()
+            {
                 commit = true;
             }
         });
@@ -957,7 +1116,7 @@ fn paint_element(
     textures: &std::collections::HashMap<String, egui::TextureHandle>,
     _assets: &[crate::model::AssetItem],
     palette: &crate::model::ColorPalette,
-    page: &crate::model::Page,
+    project_pages: &[crate::model::Page],
 ) {
     let s = &el.style;
     let r = (s.border_radius[0] * zoom).clamp(0.0, 255.0) as u8;
@@ -1083,12 +1242,11 @@ fn paint_element(
             }
 
             let mut lx = rect.max.x - pad_x - cta_w - 28.0 * zoom;
-            let labels: Vec<String> = if el.content.nav_auto_pages {
-                el.content.nav_links.iter().map(|l| l.label.clone()).collect()
+            let labels: Vec<String> = if el.content.nav_auto_pages && project_pages.len() > 1 {
+                project_pages.iter().map(|p| p.title.clone()).collect()
             } else {
                 el.content.nav_links.iter().map(|l| l.label.clone()).collect()
             };
-            let _ = page;
             for lbl in labels.iter().rev() {
                 painter.text(
                     Pos2::new(lx, rect.center().y),
