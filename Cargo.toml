@@ -1,0 +1,18 @@
+[package]
+name = "websir"
+version = "0.1.0"
+edition = "2021"
+description = "Pure-Rust, zero-AI visual website studio and static site generator with a dark minimalist slate UI"
+
+[dependencies]
+eframe = "0.31.1"
+egui = "0.31.1"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+uuid = { version = "1.11", features = ["v4", "serde"] }
+rfd = "0.15"
+zip = { version = "2.2.2", default-features = false, features = ["deflate"] }
+tiny_http = "0.12"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "webp", "gif"] }
+base64 = "0.22"
+open = "5.3"
