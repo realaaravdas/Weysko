@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Websir — Pure-Rust Visual Website Studio</title>
+  <meta name="description" content="A 100% pure-Rust, zero-AI visual website studio and static site compiler. Design visually and deploy to any web server or Google Sites.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Crisp White Enterprise Header -->
+  <header class="site-header" id="site-header">
+    <div class="header-utility">
+      <div class="ws-container header-utility-inner">
+        <a href="https://github.com/realaaravdas/Websir" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://github.com/realaaravdas/Websir/releases" target="_blank" rel="noopener noreferrer">Releases</a>
+        <a href="#deployment">Documentation</a>
+        <span>v1.0.0</span>
+      </div>
+    </div>
+    <div class="ws-container header-main-inner">
+      <div class="header-left">
+        <a class="brand-lockup" href="#top" aria-label="Websir Home">
+          <img src="assets/logo.svg" alt="Websir">
+        </a>
+        <nav class="main-nav" aria-label="Primary Navigation">
+          <a href="#studio">Studio</a>
+          <a href="#architecture">Architecture</a>
+          <a href="#capabilities">Capabilities</a>
+          <a href="#deployment">Deployment</a>
+          <a href="https://github.com/realaaravdas/Websir" target="_blank" rel="noopener noreferrer">Source</a>
+        </nav>
+      </div>
+      <div class="header-right">
+        <a class="btn-outline-enterprise" href="https://github.com/realaaravdas/Websir/releases/latest" target="_blank" rel="noopener noreferrer">Download v1.0.0</a>
+        <button class="mobile-menu-btn" id="mobile-menu-btn" type="button" aria-label="Toggle navigation" aria-expanded="false">=</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Dark Announcement Strip -->
+  <div class="announcement-strip" id="top">
+    Websir v1.0.0 is available for Windows x86_64 — 100% pure Rust, zero AI.
+    <a href="https://github.com/realaaravdas/Websir/releases/latest" target="_blank" rel="noopener noreferrer">Download release &rsaquo;</a>
+  </div>
+
+  <!-- Full-Bleed Dark Hero -->
+  <section class="hero-section">
+    <canvas id="hero-canvas" aria-hidden="true"></canvas>
+    <button class="hero-pause-btn" id="hero-pause-btn" type="button" aria-label="Pause background motion" aria-pressed="false">||</button>
+    <div class="ws-container">
+      <div class="hero-content">
+        <h1 class="hero-title">The deterministic visual studio for static web infrastructure.</h1>
+        <p class="hero-subtitle">Design multi-page websites on a minimalist slate canvas, customize every token and breakpoint, and compile clean HTML5, CSS3, and vanilla JS for any server or Google Sites.</p>
+        <div class="hero-actions">
+          <a class="pill-btn-white" href="https://github.com/realaaravdas/Websir/releases/latest" target="_blank" rel="noopener noreferrer">Download for Windows</a>
+          <a class="pill-btn-ghost" href="https://github.com/realaaravdas/Websir" target="_blank" rel="noopener noreferrer">Explore on GitHub</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3x2 Quick-Link Action Tiles -->
+  <section class="quick-tiles-section">
+    <div class="ws-container">
+      <div class="quick-tiles-grid">
+        <a class="quick-tile" href="https://github.com/realaaravdas/Websir/releases/latest" target="_blank" rel="noopener noreferrer">
+          <span>Windows Release (v1.0.0)</span>
+          <span class="chev">&rsaquo;</span>
+        </a>
+        <a class="quick-tile" href="#deployment">
+          <span>Google Sites Embed Guide</span>
+          <span class="chev">&rsaquo;</span>
+        </a>
+        <a class="quick-tile" href="#deployment">
+          <span>Headless CLI Reference</span>
+          <span class="chev">&rsaquo;</span>
+        </a>
+        <a class="quick-tile" href="#studio">
+          <span>Interactive Studio Preview</span>
+          <span class="chev">&rsaquo;</span>
+        </a>
+        <a class="quick-tile" href="#capabilities">
+          <span>16 Native Elements &amp; Themes</span>
+          <span class="chev">&rsaquo;</span>
+        </a>
+        <a class="quick-tile" href="https://github.com/realaaravdas/Websir" target="_blank" rel="noopener noreferrer">
+          <span>Source Repository</span>
+          <span class="chev">&rsaquo;</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tabbed Studio Showcase -->
+  <section class="showcase-section" id="studio">
+    <div class="ws-container">
+      <div class="section-heading-center">
+        <h2>Visual authoring engineered with zero black boxes</h2>
+        <p>Every position, CSS variable, and exported asset remains transparent, deterministic, and portable.</p>
+      </div>
+
+      <div class="showcase-tabs" role="tablist" aria-label="Studio capabilities">
+        <button class="showcase-tab is-active" role="tab" aria-selected="true" data-tab="canvas" type="button">WYSIWYG Canvas</button>
+        <button class="showcase-tab" role="tab" aria-selected="false" data-tab="tokens" type="button">Design Tokens</button>
+        <button class="showcase-tab" role="tab" aria-selected="false" data-tab="breakpoints" type="button">Breakpoints</button>
+        <button class="showcase-tab" role="tab" aria-selected="false" data-tab="export" type="button">Static Export</button>
+        <button class="showcase-tab" role="tab" aria-selected="false" data-tab="preview" type="button">Live Preview</button>
+        <button class="showcase-tab" role="tab" aria-selected="false" data-tab="cli" type="button">Headless CLI</button>
+      </div>
+
+      <div class="showcase-frame" id="showcase-frame"></div>
+
+      <div class="showcase-caption">
+        <h3 id="showcase-title">Freeform WYSIWYG Canvas with 8px Snap &amp; Smart Guides</h3>
+        <p id="showcase-desc">Drag elements, resize via 8-point handles, edit typography inline, and inspect live X/Y coordinates.</p>
+        <a class="pill-btn-white" id="showcase-cta" href="https://github.com/realaaravdas/Websir/releases/latest" target="_blank" rel="noopener noreferrer">Download Websir v1.0.0</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Midnight Navy Outcomes Split -->
+  <section class="outcomes-section" id="architecture">
+    <div class="ws-container">
+      <div class="outcomes-card">
+        <div>
+          <p class="outcomes-kicker">Architecture</p>
+          <h2 class="outcomes-title">Designed like a studio. Compiled like a build tool.</h2>
+          <div class="accordion-list">
+            <div class="accordion-item is-open">
+              <button class="accordion-trigger" type="button" aria-expanded="true">
+                <span>Deterministic zero-AI compilation</span>
+                <span class="acc-icon">^</span>
+              </button>
+              <div class="accordion-body">
+                Websir never calls external models or cloud APIs. Your layout, typography tokens, and embedded assets compile locally in Rust into predictable HTML5, CSS3 variables, and vanilla JS.
+              </div>
+            </div>
+            <div class="accordion-item">
+              <button class="accordion-trigger" type="button" aria-expanded="false">
+                <span>Deploy to any server or Google Sites</span>
+                <span class="acc-icon">v</span>
+              </button>
+              <div class="accordion-body">
+                Export multi-page folders for Nginx, Apache, S3, or GitHub Pages, package a ZIP for Netlify Drop, or copy a single-file bundle with inline routing directly into Google Sites.
+              </div>
+            </div>
+            <div class="accordion-item">
+              <button class="accordion-trigger" type="button" aria-expanded="false">
+                <span>Native Rust desktop performance</span>
+                <span class="acc-icon">v</span>
+              </button>
+              <div class="accordion-body">
+                Built on egui/eframe and tiny_http with zero Electron or Node.js runtime overhead. Ships as a single standalone executable with an embedded live preview server.
+              </div>
+            </div>
+          </div>
+          <a class="pill-btn-white" href="#deployment">Read deployment guide</a>
+        </div>
+
+        <div class="architecture-diagram">
+          <svg viewBox="0 0 480 340" width="100%" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Websir compilation pipeline">
+            <rect x="16" y="18" width="448" height="68" rx="10" fill="#091529" stroke="#1E3A5F"/>
+            <text x="34" y="46" fill="#00BCEB" font-family="Inter, sans-serif" font-size="11" font-weight="700" letter-spacing="0.08em">01 / AUTHORING</text>
+            <text x="34" y="68" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="15" font-weight="600">Websir Visual Canvas &amp; Inspector</text>
+            <text x="350" y="58" fill="#94A3B8" font-family="JetBrains Mono, monospace" font-size="11">egui / eframe</text>
+
+            <path d="M240 86 V118" stroke="#0060FF" stroke-width="2"/>
+            <polygon points="235,114 245,114 240,122" fill="#0060FF"/>
+
+            <rect x="16" y="122" width="448" height="68" rx="10" fill="#091529" stroke="#1E3A5F"/>
+            <text x="34" y="150" fill="#00BCEB" font-family="Inter, sans-serif" font-size="11" font-weight="700" letter-spacing="0.08em">02 / MODEL &amp; COMPILER</text>
+            <text x="34" y="172" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="15" font-weight="600">SiteProject JSON &rarr; HTML5 / CSS3 / JS</text>
+            <text x="350" y="162" fill="#94A3B8" font-family="JetBrains Mono, monospace" font-size="11">100% Rust</text>
+
+            <path d="M240 190 V214 M110 214 H370 M110 214 V234 M240 214 V234 M370 214 V234" stroke="#0060FF" stroke-width="2"/>
+
+            <rect x="16" y="236" width="140" height="84" rx="10" fill="#0B1B33" stroke="#284B77"/>
+            <text x="32" y="266" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="14" font-weight="600">Static Folder</text>
+            <text x="32" y="288" fill="#94A3B8" font-family="Inter, sans-serif" font-size="12">Nginx / GitHub Pages</text>
+
+            <rect x="170" y="236" width="140" height="84" rx="10" fill="#0B1B33" stroke="#284B77"/>
+            <text x="186" y="266" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="14" font-weight="600">ZIP Bundle</text>
+            <text x="186" y="288" fill="#94A3B8" font-family="Inter, sans-serif" font-size="12">Netlify / Cloudflare</text>
+
+            <rect x="324" y="236" width="140" height="84" rx="10" fill="#0B1B33" stroke="#00BCEB"/>
+            <text x="340" y="266" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="14" font-weight="600">Single-File</text>
+            <text x="340" y="288" fill="#94A3B8" font-family="Inter, sans-serif" font-size="12">Google Sites Embed</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4-Column Capabilities Grid -->
+  <section class="capabilities-section" id="capabilities">
+    <div class="ws-container">
+      <div class="section-heading-center">
+        <h2>Complete control from canvas to production</h2>
+        <p>Built for developers, agencies, and studios that require clean static artifacts.</p>
+      </div>
+      <div class="cap-grid">
+        <div class="cap-card">
+          <svg class="cap-icon" viewBox="0 0 40 40" fill="none">
+            <rect x="4" y="6" width="32" height="28" rx="4" stroke="currentColor" stroke-width="1.8"/>
+            <line x1="4" y1="14" x2="36" y2="14" stroke="currentColor" stroke-width="1.8"/>
+            <rect x="9" y="19" width="12" height="10" rx="2" stroke="#0060FF" stroke-width="1.8"/>
+          </svg>
+          <h3>Visual Canvas</h3>
+          <p>Freeform 8px grid snapping, smart alignment guides, 8-point resize handles, right-click actions, and inline text editing.</p>
+        </div>
+        <div class="cap-card">
+          <svg class="cap-icon" viewBox="0 0 40 40" fill="none">
+            <circle cx="15" cy="16" r="8" stroke="currentColor" stroke-width="1.8"/>
+            <circle cx="25" cy="24" r="8" stroke="#0060FF" stroke-width="1.8"/>
+          </svg>
+          <h3>Tokenized Themes</h3>
+          <p>Six curated slate and editorial presets with global color variables, typography pairings, shadows, and custom CSS hooks.</p>
+        </div>
+        <div class="cap-card">
+          <svg class="cap-icon" viewBox="0 0 40 40" fill="none">
+            <polyline points="14,13 7,20 14,27" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="26,13 33,20 26,27" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="22" y1="10" x2="18" y2="30" stroke="#0060FF" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          <h3>Static Compiler</h3>
+          <p>Deterministic HTML5/CSS3/JS generation with automatic XSS escaping, sitemap.xml, robots.txt, and responsive media queries.</p>
+        </div>
+        <div class="cap-card">
+          <svg class="cap-icon" viewBox="0 0 40 40" fill="none">
+            <rect x="6" y="7" width="28" height="10" rx="3" stroke="currentColor" stroke-width="1.8"/>
+            <rect x="6" y="23" width="28" height="10" rx="3" stroke="#0060FF" stroke-width="1.8"/>
+            <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+            <circle cx="12" cy="28" r="1.5" fill="#0060FF"/>
+          </svg>
+          <h3>Portable Hosting</h3>
+          <p>Publish to GitHub Pages, Nginx, Netlify Drop, Cloudflare Pages, or embed multi-page sites inside Google Sites.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Technical Metrics Band -->
+  <section class="metrics-band">
+    <div class="ws-container">
+      <div class="metrics-grid">
+        <div class="metric-item">
+          <div class="metric-value">0</div>
+          <div class="metric-label">AI or external cloud runtime dependencies</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-value">16</div>
+          <div class="metric-label">Customizable native element primitives</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-value">4</div>
+          <div class="metric-label">Deployment targets including Google Sites</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-value">100%</div>
+          <div class="metric-label">Pure Rust desktop studio &amp; static compiler</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Resources & Deployment Reference -->
+  <section class="resources-section" id="deployment">
+    <div class="ws-container">
+      <div class="section-header-row">
+        <h2>Deploy everywhere with predictable tooling</h2>
+      </div>
+
+      <div class="editorial-grid">
+        <div class="editorial-card">
+          <div class="editorial-thumb">
+            <svg viewBox="0 0 320 180" width="100%" height="100%" fill="none">
+              <rect width="320" height="180" fill="#090F1B"/>
+              <rect x="28" y="28" width="264" height="124" rx="8" fill="#0F172A" stroke="#243247"/>
+              <rect x="46" y="48" width="110" height="12" rx="3" fill="#FFFFFF"/>
+              <rect x="46" y="72" width="180" height="8" rx="3" fill="#475569"/>
+              <rect x="46" y="102" width="96" height="28" rx="14" fill="#0060FF"/>
+            </svg>
+          </div>
+          <div class="editorial-eyebrow">RELEASE</div>
+          <h3>Websir v1.0.0 Windows x86_64 Executable &amp; Checksums</h3>
+          <a class="editorial-link" href="https://github.com/realaaravdas/Websir/releases/latest" target="_blank" rel="noopener noreferrer">Download release &rsaquo;</a>
+        </div>
+
+        <div class="editorial-card">
+          <div class="editorial-thumb">
+            <svg viewBox="0 0 320 180" width="100%" height="100%" fill="none">
+              <rect width="320" height="180" fill="#090F1B"/>
+              <rect x="34" y="28" width="252" height="124" rx="8" fill="#07182D" stroke="#00BCEB"/>
+              <text x="54" y="76" fill="#00BCEB" font-family="JetBrains Mono, monospace" font-size="13">&lt;style&gt;...&lt;/style&gt;</text>
+              <text x="54" y="102" fill="#FFFFFF" font-family="JetBrains Mono, monospace" font-size="13">data:image/png;base64</text>
+              <text x="54" y="128" fill="#94A3B8" font-family="JetBrains Mono, monospace" font-size="13">&lt;script&gt;SPA Router&lt;/script&gt;</text>
+            </svg>
+          </div>
+          <div class="editorial-eyebrow">GOOGLE SITES</div>
+          <h3>Self-Contained Single-File HTML Embed Workflow</h3>
+          <a class="editorial-link" href="#google-sites-guide">View steps &rsaquo;</a>
+        </div>
+
+        <div class="editorial-card">
+          <div class="editorial-thumb">
+            <svg viewBox="0 0 320 180" width="100%" height="100%" fill="none">
+              <rect width="320" height="180" fill="#090F1B"/>
+              <rect x="28" y="28" width="264" height="124" rx="8" fill="#02060D" stroke="#334155"/>
+              <text x="46" y="68" fill="#38BDF8" font-family="JetBrains Mono, monospace" font-size="12">$ websir --export</text>
+              <text x="46" y="94" fill="#E2E8F0" font-family="JetBrains Mono, monospace" font-size="12">  template:saas --format zip</text>
+              <text x="46" y="120" fill="#94A3B8" font-family="JetBrains Mono, monospace" font-size="12">Exported 9 files (65 KB)</text>
+            </svg>
+          </div>
+          <div class="editorial-eyebrow">AUTOMATION</div>
+          <h3>Headless CLI Flags for CI/CD &amp; Static Pipelines</h3>
+          <a class="editorial-link" href="#cli-guide">View CLI commands &rsaquo;</a>
+        </div>
+
+        <div class="editorial-card">
+          <div class="editorial-thumb">
+            <svg viewBox="0 0 320 180" width="100%" height="100%" fill="none">
+              <rect width="320" height="180" fill="#090F1B"/>
+              <rect x="40" y="38" width="72" height="104" rx="6" fill="#0F172A" stroke="#334155"/>
+              <rect x="124" y="38" width="72" height="104" rx="6" fill="#0F172A" stroke="#0060FF"/>
+              <rect x="208" y="38" width="72" height="104" rx="6" fill="#0F172A" stroke="#334155"/>
+            </svg>
+          </div>
+          <div class="editorial-eyebrow">OPEN SOURCE</div>
+          <h3>MIT-Licensed Pure Rust Architecture on GitHub</h3>
+          <a class="editorial-link" href="https://github.com/realaaravdas/Websir" target="_blank" rel="noopener noreferrer">Inspect source &rsaquo;</a>
+        </div>
+      </div>
+
+      <div class="reference-grid">
+        <div class="ref-panel" id="google-sites-guide">
+          <h3>Google Sites Embed Workflow</h3>
+          <p>Launch multi-page Websir sites inside Google Sites without an external server:</p>
+          <div class="code-block">
+            <div class="code-block-head">
+              <span>WORKFLOW</span>
+              <button class="copy-code-btn" type="button">Copy</button>
+            </div>
+            <pre class="code-pre"><code>1. Open Websir Studio &rarr; click "Export / Publish"
+2. Select the "Google Sites" tab
+3. Click "Copy Embed HTML to Clipboard"
+4. In Google Sites: Insert &rarr; Embed &rarr; Embed code
+5. Paste bundle, click Next &rarr; Insert, resize full-width</code></pre>
+          </div>
+        </div>
+
+        <div class="ref-panel" id="cli-guide">
+          <h3>Headless CLI Reference</h3>
+          <p>Script templates, multi-target exports, and local HTTP preview from your terminal:</p>
+          <div class="code-block">
+            <div class="code-block-head">
+              <span>TERMINAL</span>
+              <button class="copy-code-btn" type="button">Copy</button>
+            </div>
+            <pre class="code-pre"><code>websir --init-template saas --out site.websir.json
+websir --export site.websir.json --out ./dist --format folder
+websir --export site.websir.json --out ./site.zip --format zip
+websir --serve site.websir.json --port 8080</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pre-Footer Horizon CTA -->
+  <section class="prefooter-cta">
+    <div class="ws-container">
+      <h2>Build visually. Own every byte.</h2>
+      <p>Download Websir v1.0.0 for Windows or build directly from source with Cargo.</p>
+      <div class="hero-actions" style="justify-content:center;">
+        <a class="pill-btn-white" href="https://github.com/realaaravdas/Websir/releases/latest" target="_blank" rel="noopener noreferrer">Download v1.0.0</a>
+        <a class="pill-btn-ghost" href="https://github.com/realaaravdas/Websir" target="_blank" rel="noopener noreferrer">View on GitHub</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Compact Cool-Grey Enterprise Footer -->
+  <footer class="site-footer">
+    <div class="ws-container">
+      <div class="footer-top">
+        <div class="footer-primary-links">
+          <a href="https://github.com/realaaravdas/Websir/releases/latest" target="_blank" rel="noopener noreferrer">Download v1.0.0</a>
+          <a href="#deployment">Documentation</a>
+          <a href="#architecture">Architecture</a>
+          <a href="https://github.com/realaaravdas/Websir" target="_blank" rel="noopener noreferrer">GitHub Repository</a>
+        </div>
+        <div class="footer-icons">
+          <a href="https://github.com/realaaravdas/Websir" target="_blank" rel="noopener noreferrer" aria-label="Websir GitHub Repository">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.57.11.78-.25.78-.55v-1.93c-3.2.7-3.87-1.54-3.87-1.54-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.02 1.76 2.69 1.25 3.35.96.1-.74.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.68 0-1.25.45-2.28 1.19-3.08-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.78 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.8 1.19 1.83 1.19 3.08 0 4.41-2.69 5.39-5.26 5.67.41.36.78 1.06.78 2.14v3.17c0 .3.21.66.79.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div class="footer-legal-links">
+        <a href="https://github.com/realaaravdas/Websir/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>
+        <a href="https://github.com/realaaravdas/Websir/releases" target="_blank" rel="noopener noreferrer">Releases &amp; SHA256 Checksums</a>
+        <a href="#cli-guide">CLI Reference</a>
+        <a href="#google-sites-guide">Google Sites Guide</a>
+        <a href="https://github.com/realaaravdas/Websir/issues" target="_blank" rel="noopener noreferrer">Issue Tracker</a>
+      </div>
+
+      <div class="footer-copy">&copy; 2026 Websir Project. Pure Rust. Zero AI. MIT License.</div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

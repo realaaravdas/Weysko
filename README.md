@@ -1,4 +1,10 @@
+<p align="left">
+  <img src="assets/logo-dark.svg" alt="Websir Logo" height="44" />
+</p>
+
 # Websir
+
+**Official Website:** [https://realaaravdas.github.io/Websir/](https://realaaravdas.github.io/Websir/) · **Releases:** [GitHub Releases](https://github.com/realaaravdas/Websir/releases)
 
 **Websir** is a 100% pure-Rust, zero-AI visual website studio and static site compiler inspired by classic Wix Studio, built with a modern, minimalist **dark-and-white slate** workspace.
 
