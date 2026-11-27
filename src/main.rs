@@ -1,3 +1,5 @@
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+
 use std::env;
 use std::fs;
 use std::path::PathBuf;
@@ -14,12 +16,25 @@ use websir::preview::PreviewServer;
 use websir::studio::WebsirApp;
 use websir::templates::StarterTemplate;
 
+#[cfg(all(windows, not(debug_assertions)))]
+fn attach_parent_console_if_cli() {
+    extern "system" {
+        fn AttachConsole(dwProcessId: u32) -> i32;
+    }
+    unsafe {
+        let _ = AttachConsole(0xFFFF_FFFF);
+    }
+}
+
 fn main() {
     let args: Vec<String> = env::args().skip(1).collect();
     if args.is_empty() {
         run_gui(StarterTemplate::MinimalistPortfolio.build(), None);
         return;
     }
+
+    #[cfg(all(windows, not(debug_assertions)))]
+    attach_parent_console_if_cli();
 
     if args.iter().any(|a| a == "--help" || a == "-h") {
         print_help();

@@ -1,9 +1,10 @@
 use egui::{Color32, CornerRadius, IconData, Painter, Pos2, Rect, Vec2};
 
-/// Generates the crisp 64x64 RGBA application window icon matching `assets/logo-mark.svg`.
-pub fn app_icon_data() -> IconData {
-    let size = 64u32;
+/// Renders the Websir 7-bar geometric emblem on a rounded slate square at any square resolution.
+pub fn render_logo_rgba(size: u32) -> Vec<u8> {
     let mut rgba = vec![0u8; (size * size * 4) as usize];
+    let s = size as f32;
+    let scale = s / 64.0;
 
     let bg = [15u8, 23, 42, 255];      // #0F172A
     let border = [51u8, 65, 85, 255];  // #334155
@@ -11,17 +12,22 @@ pub fn app_icon_data() -> IconData {
     let cyan = [0u8, 188, 235, 255];   // #00BCEB
     let muted = [148u8, 163, 184, 255];
 
-    // Rounded background square
+    // Rounded background square with 1-px crisp perimeter
+    let half = s * 0.5;
+    let inner_box = 18.0 * scale;
+    let radius = 13.0 * scale;
+    let border_thickness = (1.8 * scale).max(1.0);
+
     for y in 0..size {
         for x in 0..size {
             let fx = x as f32 + 0.5;
             let fy = y as f32 + 0.5;
-            let dx = (fx - 32.0).abs() - 18.0;
-            let dy = (fy - 32.0).abs() - 18.0;
-            let dist = dx.max(0.0).hypot(dy.max(0.0)) + dx.max(dy).min(0.0) - 13.0;
+            let dx = (fx - half).abs() - inner_box;
+            let dy = (fy - half).abs() - inner_box;
+            let dist = dx.max(0.0).hypot(dy.max(0.0)) + dx.max(dy).min(0.0) - radius;
             let idx = ((y * size + x) * 4) as usize;
             if dist <= 0.0 {
-                let col = if dist > -1.8 { border } else { bg };
+                let col = if dist > -border_thickness { border } else { bg };
                 rgba[idx..idx + 4].copy_from_slice(&col);
             }
         }
@@ -39,10 +45,10 @@ pub fn app_icon_data() -> IconData {
     ];
 
     for (bx, by, bw, bh, col) in bars {
-        let x0 = bx.floor() as u32;
-        let x1 = (bx + bw).ceil().min(size as f32) as u32;
-        let y0 = by.floor() as u32;
-        let y1 = (by + bh).ceil().min(size as f32) as u32;
+        let x0 = (bx * scale).floor() as u32;
+        let x1 = ((bx + bw) * scale).ceil().min(s) as u32;
+        let y0 = (by * scale).floor() as u32;
+        let y1 = ((by + bh) * scale).ceil().min(s) as u32;
         for y in y0..y1 {
             for x in x0..x1 {
                 let idx = ((y * size + x) * 4) as usize;
@@ -51,8 +57,14 @@ pub fn app_icon_data() -> IconData {
         }
     }
 
+    rgba
+}
+
+/// Generates the crisp 64x64 RGBA application window icon matching `assets/logo-mark.svg`.
+pub fn app_icon_data() -> IconData {
+    let size = 64u32;
     IconData {
-        rgba,
+        rgba: render_logo_rgba(size),
         width: size,
         height: size,
     }
