@@ -306,7 +306,7 @@
   function renderHomeTemplates() {
     if (!templateGrid) return;
     var list = [
-      { key: 'meridian', title: 'Meridian Cloud (Example Site)', badge: 'DEMO', desc: 'Complete 3-page cloud infrastructure showcase matching the v1.3.0 tutorial.' },
+      { key: 'meridian', title: 'Meridian Cloud (Example Site)', badge: 'DEMO', desc: 'Complete 3-page cloud infrastructure showcase matching the v1.3.1 tutorial.' },
       { key: 'portfolio', title: 'Minimalist Slate Portfolio', badge: '', desc: 'Asymmetric architectural hero, studio work strip & clean contact flow.' },
       { key: 'saas', title: 'SaaS Product Landing', badge: '', desc: 'Centered launch hero, capabilities grid, and conversion CTA.' },
       { key: 'blank', title: 'Blank Canvas', badge: '', desc: 'Minimalist starting page ready for custom elements and strips.' }
@@ -744,7 +744,7 @@
     var envelope = {
       format: 'weysko-project',
       format_version: 1,
-      app_version: '1.3.0',
+      app_version: '1.3.1',
       exported_at_unix: Math.floor(Date.now() / 1000),
       project: {
         schema_version: 1,

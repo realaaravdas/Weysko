@@ -189,6 +189,7 @@ pub struct StudioState {
     pub textures: HashMap<String, TextureHandle>,
     pub preview_server: Option<PreviewServer>,
     pub preview_dirty: bool,
+    pub last_window_width: f32,
 }
 
 impl StudioState {
@@ -250,6 +251,7 @@ impl StudioState {
             textures: HashMap::new(),
             preview_server: None,
             preview_dirty: false,
+            last_window_width: 1280.0,
         }
     }
 
@@ -704,5 +706,43 @@ impl StudioState {
                 }
             }
         }
+    }
+
+    /// Automatically manages side panels when window width shrinks so the canvas stays usable.
+    pub fn adapt_panels_to_width(&mut self, screen_w: f32) {
+        if screen_w < 1080.0
+            && self.last_window_width >= 1080.0
+            && self.active_drawer.is_some()
+            && self.show_inspector
+        {
+            self.show_inspector = false;
+        }
+        if screen_w < 860.0 && self.active_drawer.is_some() && self.show_inspector {
+            self.show_inspector = false;
+        }
+        self.last_window_width = screen_w;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn adapt_panels_to_width_collapses_inspector_when_narrow() {
+        let mut st = StudioState::new(StarterTemplate::BlankCanvas.build());
+        assert!(st.active_drawer.is_some());
+        assert!(st.show_inspector);
+
+        st.adapt_panels_to_width(1280.0);
+        assert!(st.show_inspector);
+
+        st.adapt_panels_to_width(960.0);
+        assert!(!st.show_inspector);
+
+        // User can re-open inspector at 960px manually, but below 860px both stay mutually exclusive
+        st.show_inspector = true;
+        st.adapt_panels_to_width(760.0);
+        assert!(!st.show_inspector);
     }
 }

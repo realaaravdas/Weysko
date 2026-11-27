@@ -162,7 +162,7 @@ fn native_options() -> eframe::NativeOptions {
         viewport: eframe::egui::ViewportBuilder::default()
             .with_title("Weysko — Pure-Rust Visual Website Studio")
             .with_inner_size([1280.0, 780.0])
-            .with_min_inner_size([840.0, 540.0])
+            .with_min_inner_size([680.0, 480.0])
             .with_icon(weysko::studio::branding::app_icon_data()),
         ..Default::default()
     }

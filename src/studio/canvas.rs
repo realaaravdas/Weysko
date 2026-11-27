@@ -58,7 +58,8 @@ pub fn draw_canvas(ctx: &egui::Context, state: &mut StudioState) {
             let vp = state.viewport;
             let vp_width = vp.width_px();
             if state.auto_fit_zoom {
-                state.zoom = ((panel_rect.width() - 56.0).max(240.0) / vp_width).clamp(0.35, 1.0);
+                state.zoom =
+                    ((panel_rect.width() - 40.0).max(180.0) / vp_width).clamp(0.24, 1.0);
             }
             let zoom = state.zoom;
             let artboard_w_screen = vp_width * zoom;
@@ -76,10 +77,10 @@ pub fn draw_canvas(ctx: &egui::Context, state: &mut StudioState) {
             ScrollArea::both()
                 .auto_shrink([false, false])
                 .show(ui, |ui| {
-                    ui.add_space(22.0);
+                    ui.add_space(16.0);
 
                     let avail_w = ui.available_width();
-                    let side_pad = ((avail_w - artboard_w_screen) * 0.5).max(28.0);
+                    let side_pad = ((avail_w - artboard_w_screen) * 0.5).max(16.0);
 
                     ui.horizontal(|ui| {
                         ui.add_space(side_pad);
@@ -107,15 +108,20 @@ pub fn draw_canvas(ctx: &egui::Context, state: &mut StudioState) {
                                         ui.with_layout(
                                             egui::Layout::right_to_left(egui::Align::Center),
                                             |ui| {
-                                                ui.label(
-                                                    RichText::new(format!(
+                                                let meta_txt = if artboard_w_screen < 340.0 {
+                                                    format!("{}%", (zoom * 100.0).round() as i32)
+                                                } else {
+                                                    format!(
                                                         "{} • {}px • {}%",
                                                         vp.label(),
                                                         vp_width as i32,
                                                         (zoom * 100.0).round() as i32
-                                                    ))
-                                                    .size(11.0)
-                                                    .color(TEXT_MUTED),
+                                                    )
+                                                };
+                                                ui.label(
+                                                    RichText::new(meta_txt)
+                                                        .size(11.0)
+                                                        .color(TEXT_MUTED),
                                                 );
                                             },
                                         );

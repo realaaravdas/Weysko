@@ -17,9 +17,13 @@ pub fn draw_inspector(ctx: &egui::Context, state: &mut StudioState) {
     if !state.show_inspector {
         return;
     }
+    let screen_w = ctx.screen_rect().width();
+    let max_insp = (screen_w * 0.36).clamp(220.0, 360.0);
+    let def_insp = if screen_w < 1024.0 { 248.0 } else { 284.0 };
+
     egui::SidePanel::right("weysko_inspector")
-        .default_width(284.0)
-        .width_range(236.0..=380.0)
+        .default_width(def_insp)
+        .width_range(216.0..=max_insp)
         .resizable(true)
         .frame(
             Frame::new()
@@ -89,9 +93,10 @@ fn draw_element_inspector(ui: &mut Ui, state: &mut StudioState, el_id: &str) {
                 .strong()
                 .size(12.0),
         );
+        let name_w = (ui.available_width() - 102.0).clamp(64.0, 156.0);
         ui.add(
             egui::TextEdit::singleline(&mut el.name)
-                .desired_width(136.0)
+                .desired_width(name_w)
                 .font(egui::FontId::proportional(12.5)),
         );
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {

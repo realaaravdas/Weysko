@@ -12,7 +12,7 @@ Start from an Adobe-style Creative Studio launcher to pick a website visual styl
 
 ---
 
-## Key Features (v1.3.0)
+## Key Features (v1.3.1)
 
 - **Zero AI, 100% Pure Rust**: Deterministic visual builder and static compiler powered by `eframe`/`egui`, `serde_json`, `image`, `zip`, and `tiny_http`.
 - **Creative Studio Start Screen**: Choose from 6 visual styles, browse wireframe starter templates (including the 3-page **Meridian Cloud** example), build custom multi-page skeletons from scratch, import `.weysko` files, or reopen recent projects.
@@ -27,11 +27,11 @@ Start from an Adobe-style Creative Studio launcher to pick a website visual styl
 
 ---
 
-## Installing & Running Weysko v1.3.0
+## Installing & Running Weysko v1.3.1
 
-- **Windows:** Download **`weysko-v1.3.0-windows-x86_64-setup.exe`** from [GitHub Releases](https://github.com/realaaravdas/Weysko/releases/latest) for Start Menu & Desktop shortcuts, `.weysko` / `.weysko.json` file associations, User `PATH` CLI registration, and uninstaller.
-- **macOS (Apple Silicon):** Download **`weysko-v1.3.0-macos-arm64.dmg`**, open, and drag **Weysko.app** into Applications.
-- **Linux (`x86_64`):** Download **`weysko-v1.3.0-linux-x86_64.AppImage`** (`chmod +x` and run) or install **`weysko-v1.3.0-linux-x86_64.deb`**.
+- **Windows:** Download **`weysko-v1.3.1-windows-x86_64-setup.exe`** from [GitHub Releases](https://github.com/realaaravdas/Weysko/releases/latest) for Start Menu & Desktop shortcuts, `.weysko` / `.weysko.json` file associations, User `PATH` CLI registration, and uninstaller.
+- **macOS (Apple Silicon):** Download **`weysko-v1.3.1-macos-arm64.dmg`**, open, and drag **Weysko.app** into Applications.
+- **Linux (`x86_64`):** Download **`weysko-v1.3.1-linux-x86_64.AppImage`** (`chmod +x` and run) or install **`weysko-v1.3.1-linux-x86_64.deb`**.
 
 ### Build from Source
 ```bash

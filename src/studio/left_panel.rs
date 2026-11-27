@@ -71,6 +71,9 @@ pub fn draw_left_panel(ctx: &egui::Context, state: &mut StudioState) {
                             state.active_drawer = None;
                         } else {
                             state.active_drawer = Some(*tab);
+                            if ctx.screen_rect().width() < 920.0 {
+                                state.show_inspector = false;
+                            }
                         }
                     }
                 }
@@ -79,9 +82,13 @@ pub fn draw_left_panel(ctx: &egui::Context, state: &mut StudioState) {
 
     // 2. Resizable Collapsible Drawer
     if let Some(tab) = state.active_drawer {
+        let screen_w = ctx.screen_rect().width();
+        let max_drawer = (screen_w * 0.34).clamp(196.0, 320.0);
+        let def_drawer = if screen_w < 1024.0 { 216.0 } else { 244.0 };
+
         egui::SidePanel::left("weysko_left_drawer")
-            .default_width(244.0)
-            .width_range(200.0..=340.0)
+            .default_width(def_drawer)
+            .width_range(190.0..=max_drawer)
             .resizable(true)
             .frame(
                 Frame::new()
@@ -153,7 +160,7 @@ fn draw_add_elements_drawer(ui: &mut Ui, state: &mut StudioState) {
         }
 
         section_heading(ui, cat);
-        let tile_w = ((ui.available_width() - 8.0) * 0.5 - 18.0).max(74.0);
+        let tile_w = ((ui.available_width() - 18.0) * 0.5 - 16.0).max(68.0);
         egui::Grid::new(format!("add_grid_{}", cat))
             .num_columns(2)
             .spacing([8.0, 8.0])

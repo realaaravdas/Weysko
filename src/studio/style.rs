@@ -188,7 +188,7 @@ pub fn color_picker_hex(ui: &mut Ui, label: &str, hex_val: &mut String) -> bool 
     changed
 }
 
-/// Segmented pill tab selector.
+/// Segmented pill tab selector (wraps gracefully on compact panels).
 pub fn segmented_tabs<T: Copy + PartialEq>(
     ui: &mut Ui,
     current: &mut T,
@@ -201,20 +201,21 @@ pub fn segmented_tabs<T: Copy + PartialEq>(
         .corner_radius(CornerRadius::same(7))
         .inner_margin(Margin::same(3))
         .show(ui, |ui| {
-            ui.horizontal(|ui| {
-                ui.spacing_mut().item_spacing.x = 3.0;
+            ui.set_width(ui.available_width());
+            ui.horizontal_wrapped(|ui| {
+                ui.spacing_mut().item_spacing = egui::vec2(3.0, 3.0);
                 for (val, label) in items {
                     let active = *current == *val;
                     let btn = egui::Button::new(
                         RichText::new(*label)
-                            .size(11.5)
+                            .size(11.0)
                             .color(if active { SLATE_INK } else { TEXT_MUTED })
                             .strong(),
                     )
                     .fill(if active { WHITE } else { Color32::TRANSPARENT })
                     .stroke(Stroke::NONE)
                     .corner_radius(CornerRadius::same(5))
-                    .min_size(egui::vec2(0.0, 24.0));
+                    .min_size(egui::vec2(0.0, 23.0));
                     if ui.add(btn).clicked() && !active {
                         *current = *val;
                         changed = true;

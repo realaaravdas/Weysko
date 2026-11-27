@@ -360,7 +360,7 @@ fn register_uninstall_entry(
 
     key.set_value("DisplayName", &"Weysko Visual Website Studio")
         .map_err(|e| e.to_string())?;
-    key.set_value("DisplayVersion", &"1.3.0")
+    key.set_value("DisplayVersion", &"1.3.1")
         .map_err(|e| e.to_string())?;
     key.set_value("Publisher", &"Weysko Project")
         .map_err(|e| e.to_string())?;

@@ -177,10 +177,8 @@ impl WeyskoApp {
             }
         }
     }
-}
-
-impl eframe::App for WeyskoApp {
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+    /// Executes one full studio UI frame (`Home` or `Editor`) cleanly inside `ctx`.
+    pub fn draw_frame(&mut self, ctx: &egui::Context) {
         if !self.theme_initialized {
             apply_slate_theme(ctx);
             self.theme_initialized = true;
@@ -192,6 +190,8 @@ impl eframe::App for WeyskoApp {
                 modals::draw_modals_and_toasts(ctx, &mut self.state);
             }
             AppScreen::Editor => {
+                self.state
+                    .adapt_panels_to_width(ctx.screen_rect().width());
                 self.handle_shortcuts(ctx);
                 self.state.ensure_asset_textures(ctx);
                 top_bar::draw_top_bar(ctx, &mut self.state);
@@ -201,6 +201,83 @@ impl eframe::App for WeyskoApp {
                 canvas::draw_canvas(ctx, &mut self.state);
                 modals::draw_modals_and_toasts(ctx, &mut self.state);
                 self.state.sync_preview_if_running();
+            }
+        }
+    }
+}
+
+impl eframe::App for WeyskoApp {
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        self.draw_frame(ctx);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn run_frames_at(app: &mut WeyskoApp, w: f32, h: f32) -> (egui::Rect, Vec<(egui::Id, egui::Rect)>) {
+        let ctx = egui::Context::default();
+        let raw = egui::RawInput {
+            screen_rect: Some(egui::Rect::from_min_size(
+                egui::Pos2::ZERO,
+                egui::vec2(w, h),
+            )),
+            ..Default::default()
+        };
+        let mut center_used = egui::Rect::NOTHING;
+        let mut wide_rects = Vec::new();
+        for _ in 0..3 {
+            wide_rects.clear();
+            let out = ctx.run(raw.clone(), |ctx| {
+                app.draw_frame(ctx);
+                center_used = ctx.used_rect();
+            });
+            for clipped in &out.shapes {
+                let r = clipped.shape.visual_bounding_rect();
+                if r.max.x > w + 2.0 {
+                    wide_rects.push((egui::Id::new("shape"), r));
+                }
+            }
+        }
+        (center_used, wide_rects)
+    }
+
+    #[test]
+    fn start_and_editor_render_cleanly_at_non_fullscreen_sizes() {
+        for (w, h) in [(680.0, 480.0), (820.0, 560.0), (980.0, 660.0), (1280.0, 780.0)] {
+            let mut home_app = WeyskoApp::new_home();
+            let (used_home, wide_home) = run_frames_at(&mut home_app, w, h);
+            assert!(
+                used_home.max.x <= w + 2.0,
+                "Home screen exceeded width {} at {}x{}: {:?} wide_shapes={:?}",
+                w,
+                w,
+                h,
+                used_home,
+                wide_home
+            );
+
+            let mut editor_app = WeyskoApp::new(StarterTemplate::MeridianDemo.build());
+            let (used_ed, wide_ed) = run_frames_at(&mut editor_app, w, h);
+            assert!(
+                used_ed.max.x <= w + 2.0,
+                "Editor screen exceeded width {} at {}x{}: {:?} wide_shapes={:?}",
+                w,
+                w,
+                h,
+                used_ed,
+                wide_ed
+            );
+            assert!(
+                editor_app.state.zoom >= 0.24 && editor_app.state.zoom <= 1.0,
+                "Zoom out of expected fit bounds at {}x{}: {}",
+                w,
+                h,
+                editor_app.state.zoom
+            );
+            if w < 1080.0 {
+                assert!(!editor_app.state.show_inspector);
             }
         }
     }
