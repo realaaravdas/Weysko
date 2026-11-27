@@ -135,8 +135,8 @@ fn run_gui(project: SiteProject, file_path: Option<PathBuf>) {
     let options = eframe::NativeOptions {
         viewport: eframe::egui::ViewportBuilder::default()
             .with_title("Websir — Pure-Rust Visual Website Studio")
-            .with_inner_size([1440.0, 900.0])
-            .with_min_inner_size([1060.0, 680.0])
+            .with_inner_size([1280.0, 780.0])
+            .with_min_inner_size([840.0, 540.0])
             .with_icon(websir::studio::branding::app_icon_data()),
         ..Default::default()
     };

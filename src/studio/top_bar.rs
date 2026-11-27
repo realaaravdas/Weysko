@@ -22,19 +22,28 @@ pub fn draw_top_bar(ctx: &egui::Context, state: &mut StudioState) {
                 .inner_margin(Margin::symmetric(14, 8)),
         )
         .show(ctx, |ui| {
+            ui.spacing_mut().item_spacing.x = 5.0;
+            let avail_w = ui.available_width();
+            let compact = avail_w < 1120.0;
+            let show_pages_btn = avail_w >= 1220.0;
+            let show_proj_name = avail_w >= 960.0;
+
             ui.horizontal_centered(|ui| {
                 // Vector Brand Mark + Wordmark
                 let (mark_rect, _) =
-                    ui.allocate_exact_size(egui::vec2(26.0, 22.0), egui::Sense::hover());
+                    ui.allocate_exact_size(egui::vec2(24.0, 20.0), egui::Sense::hover());
                 super::branding::paint_logo_mark(
                     ui.painter(),
                     mark_rect,
                     WHITE,
                     Color32::from_rgb(0, 188, 235),
                 );
-                ui.label(RichText::new("WEBSIR").color(WHITE).strong().size(13.5));
+                if !compact {
+                    ui.label(RichText::new("WEBSIR").color(WHITE).strong().size(13.0));
+                }
 
-                ui.menu_button(RichText::new("File").color(TEXT_MUTED).size(12.0), |ui| {
+                let file_lbl = if state.dirty { "File*" } else { "File" };
+                ui.menu_button(RichText::new(file_lbl).color(TEXT_MUTED).size(12.0), |ui| {
                     if ui.button("New Blank Site").clicked() {
                         state.apply_template(crate::templates::StarterTemplate::BlankCanvas);
                         ui.close_menu();
@@ -53,6 +62,10 @@ pub fn draw_top_bar(ctx: &egui::Context, state: &mut StudioState) {
                         ui.close_menu();
                     }
                     ui.separator();
+                    if ui.button("Manage Pages...").clicked() {
+                        state.show_pages_modal = true;
+                        ui.close_menu();
+                    }
                     if ui.button("Export / Publish...").clicked() {
                         state.google_sites_embed_cache =
                             generate_google_sites_embed(&state.project);
@@ -61,30 +74,30 @@ pub fn draw_top_bar(ctx: &egui::Context, state: &mut StudioState) {
                     }
                 });
 
-                ui.add_space(4.0);
                 separator_v(ui);
-                ui.add_space(4.0);
 
-                // Editable Project Name
-                let name_resp = ui.add(
-                    egui::TextEdit::singleline(&mut state.project.name)
-                        .desired_width(135.0)
-                        .font(egui::FontId::proportional(12.5)),
-                );
-                if name_resp.changed() {
-                    state.mark_mutated();
+                // Editable Project Name (auto-hides on narrow windows)
+                if show_proj_name {
+                    let name_resp = ui.add(
+                        egui::TextEdit::singleline(&mut state.project.name)
+                            .desired_width(108.0)
+                            .font(egui::FontId::proportional(12.0)),
+                    );
+                    if name_resp.changed() {
+                        state.mark_mutated();
+                    }
                 }
 
-                // Page Dropdown + Pages Modal Button
+                // Page Dropdown (includes Manage Pages action)
                 let current_page_title = state
                     .project
                     .find_page(&state.selected_page_id)
-                    .map(|p| format!("{} (/{})", p.title, p.html_filename()))
-                    .unwrap_or_else(|| "Select Page".into());
+                    .map(|p| format!("/{}", p.html_filename()))
+                    .unwrap_or_else(|| "Page".into());
 
                 egui::ComboBox::from_id_salt("top_page_selector")
-                    .selected_text(RichText::new(current_page_title).size(12.0))
-                    .width(160.0)
+                    .selected_text(RichText::new(current_page_title).size(11.5))
+                    .width(122.0)
                     .show_ui(ui, |ui| {
                         let pages: Vec<(String, String, String)> = state
                             .project
@@ -103,17 +116,19 @@ pub fn draw_top_bar(ctx: &egui::Context, state: &mut StudioState) {
                                 state.reconcile_selection();
                             }
                         }
+                        ui.separator();
+                        if ui.button("+ Manage Pages...").clicked() {
+                            state.show_pages_modal = true;
+                        }
                     });
 
-                if secondary_slate_button(ui, "Pages").clicked() {
+                if show_pages_btn && secondary_slate_button(ui, "Pages").clicked() {
                     state.show_pages_modal = true;
                 }
 
-                ui.add_space(10.0);
                 separator_v(ui);
-                ui.add_space(6.0);
 
-                // Center Viewport Switcher + Zoom + Grid/Snap
+                // Viewport Switcher + Zoom + Grid/Snap
                 Frame::new()
                     .fill(BG_INPUT)
                     .stroke(Stroke::new(1.0_f32, BORDER_STRONG))
@@ -128,10 +143,18 @@ pub fn draw_top_bar(ctx: &egui::Context, state: &mut StudioState) {
                                 ViewportMode::Mobile,
                             ] {
                                 let active = state.viewport == vp;
-                                let label = match vp {
-                                    ViewportMode::Desktop => "Desktop",
-                                    ViewportMode::Tablet => "Tablet",
-                                    ViewportMode::Mobile => "Mobile",
+                                let label = if compact {
+                                    match vp {
+                                        ViewportMode::Desktop => "D",
+                                        ViewportMode::Tablet => "T",
+                                        ViewportMode::Mobile => "M",
+                                    }
+                                } else {
+                                    match vp {
+                                        ViewportMode::Desktop => "Desktop",
+                                        ViewportMode::Tablet => "Tablet",
+                                        ViewportMode::Mobile => "Mobile",
+                                    }
                                 };
                                 let btn = egui::Button::new(
                                     RichText::new(label)
@@ -143,33 +166,32 @@ pub fn draw_top_bar(ctx: &egui::Context, state: &mut StudioState) {
                                 .stroke(Stroke::NONE)
                                 .corner_radius(CornerRadius::same(5))
                                 .min_size(egui::vec2(0.0, 24.0));
-                                if ui.add(btn).clicked() {
+                                if ui.add(btn).on_hover_text(vp.label()).clicked() {
                                     state.viewport = vp;
+                                    state.auto_fit_zoom = true;
                                 }
                             }
                         });
                     });
 
-                if ghost_button(ui, "-", false).on_hover_text("Zoom out").clicked() {
-                    state.zoom = (state.zoom - 0.1).max(0.45);
+                if ghost_button(ui, "-", false).on_hover_text("Zoom out (Ctrl+-)").clicked() {
+                    state.auto_fit_zoom = false;
+                    state.zoom = (state.zoom - 0.1).max(0.35);
                 }
                 ui.label(
                     RichText::new(format!("{}%", (state.zoom * 100.0).round() as i32))
-                        .size(11.5)
+                        .size(11.0)
                         .color(TEXT_MUTED),
                 );
-                if ghost_button(ui, "+", false).on_hover_text("Zoom in").clicked() {
+                if ghost_button(ui, "+", false).on_hover_text("Zoom in (Ctrl+=)").clicked() {
+                    state.auto_fit_zoom = false;
                     state.zoom = (state.zoom + 0.1).min(1.5);
                 }
-                if ghost_button(ui, "Fit", false)
-                    .on_hover_text("Fit canvas to workspace")
+                if ghost_button(ui, "Fit", state.auto_fit_zoom)
+                    .on_hover_text("Auto-fit canvas to window width (Ctrl+0)")
                     .clicked()
                 {
-                    state.zoom = match state.viewport {
-                        ViewportMode::Desktop => 0.72,
-                        ViewportMode::Tablet => 0.95,
-                        ViewportMode::Mobile => 1.0,
-                    };
+                    state.auto_fit_zoom = true;
                 }
 
                 if ghost_button(ui, "Grid", state.show_grid)
@@ -185,12 +207,20 @@ pub fn draw_top_bar(ctx: &egui::Context, state: &mut StudioState) {
                     state.snap_to_grid = !state.snap_to_grid;
                 }
 
-                // Right-aligned Undo/Redo, Save/Open, Live Preview, Shortcuts, Export CTA
+                // Right-aligned Undo/Redo, Live Preview, Shortcuts, Inspector toggle, Export CTA
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    if primary_white_button(ui, "Export / Publish").clicked() {
+                    let export_lbl = if compact { "Export" } else { "Export / Publish" };
+                    if primary_white_button(ui, export_lbl).clicked() {
                         state.google_sites_embed_cache =
                             generate_google_sites_embed(&state.project);
                         state.show_export_modal = true;
+                    }
+
+                    if ghost_button(ui, "Props", state.show_inspector)
+                        .on_hover_text("Toggle right Inspector panel")
+                        .clicked()
+                    {
+                        state.show_inspector = !state.show_inspector;
                     }
 
                     if ghost_button(ui, "?", state.show_shortcuts_modal)
@@ -202,6 +232,8 @@ pub fn draw_top_bar(ctx: &egui::Context, state: &mut StudioState) {
 
                     let preview_label = if state.preview_server.is_some() {
                         "Preview ●"
+                    } else if compact {
+                        "Preview"
                     } else {
                         "Live Preview"
                     };
@@ -212,33 +244,20 @@ pub fn draw_top_bar(ctx: &egui::Context, state: &mut StudioState) {
                         launch_or_open_preview(state);
                     }
 
-                    if secondary_slate_button(ui, "Open")
-                        .on_hover_text("Open a .websir.json project")
-                        .clicked()
-                    {
-                        open_project_dialog(state);
+                    if !compact {
+                        let can_redo = state.history.can_redo();
+                        ui.add_enabled_ui(can_redo, |ui| {
+                            if ghost_button(ui, "Redo", false).clicked() {
+                                state.redo();
+                            }
+                        });
+                        let can_undo = state.history.can_undo();
+                        ui.add_enabled_ui(can_undo, |ui| {
+                            if ghost_button(ui, "Undo", false).clicked() {
+                                state.undo();
+                            }
+                        });
                     }
-
-                    let save_label = if state.dirty { "Save*" } else { "Save" };
-                    if secondary_slate_button(ui, save_label)
-                        .on_hover_text("Save project (.websir.json)")
-                        .clicked()
-                    {
-                        save_project_dialog(state, false);
-                    }
-
-                    let can_redo = state.history.can_redo();
-                    ui.add_enabled_ui(can_redo, |ui| {
-                        if ghost_button(ui, "Redo", false).clicked() {
-                            state.redo();
-                        }
-                    });
-                    let can_undo = state.history.can_undo();
-                    ui.add_enabled_ui(can_undo, |ui| {
-                        if ghost_button(ui, "Undo", false).clicked() {
-                            state.undo();
-                        }
-                    });
                 });
             });
         });

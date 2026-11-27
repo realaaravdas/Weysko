@@ -14,9 +14,13 @@ use super::style::{
 };
 
 pub fn draw_inspector(ctx: &egui::Context, state: &mut StudioState) {
+    if !state.show_inspector {
+        return;
+    }
     egui::SidePanel::right("websir_inspector")
-        .exact_width(316.0)
-        .resizable(false)
+        .default_width(284.0)
+        .width_range(236.0..=380.0)
+        .resizable(true)
         .frame(
             Frame::new()
                 .fill(BG_PANEL)
@@ -24,6 +28,21 @@ pub fn draw_inspector(ctx: &egui::Context, state: &mut StudioState) {
                 .inner_margin(Margin::same(12)),
         )
         .show(ctx, |ui| {
+            ui.horizontal(|ui| {
+                ui.label(RichText::new("Inspector").color(WHITE).strong().size(13.0));
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    if ghost_button(ui, "x", false)
+                        .on_hover_text("Collapse Inspector")
+                        .clicked()
+                    {
+                        state.show_inspector = false;
+                    }
+                });
+            });
+            ui.add_space(4.0);
+            ui.separator();
+            ui.add_space(4.0);
+
             ScrollArea::vertical()
                 .auto_shrink([false, false])
                 .show(ui, |ui| {

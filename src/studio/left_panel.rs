@@ -15,7 +15,7 @@ use super::style::{
 pub fn draw_left_panel(ctx: &egui::Context, state: &mut StudioState) {
     // 1. Wix-style narrow vertical icon rail
     egui::SidePanel::left("websir_left_rail")
-        .exact_width(58.0)
+        .exact_width(54.0)
         .resizable(false)
         .frame(
             Frame::new()
@@ -65,11 +65,12 @@ pub fn draw_left_panel(ctx: &egui::Context, state: &mut StudioState) {
             });
         });
 
-    // 2. Collapsible Drawer
+    // 2. Resizable Collapsible Drawer
     if let Some(tab) = state.active_drawer {
         egui::SidePanel::left("websir_left_drawer")
-            .exact_width(276.0)
-            .resizable(false)
+            .default_width(244.0)
+            .width_range(200.0..=340.0)
+            .resizable(true)
             .frame(
                 Frame::new()
                     .fill(BG_PANEL)
@@ -140,6 +141,7 @@ fn draw_add_elements_drawer(ui: &mut Ui, state: &mut StudioState) {
         }
 
         section_heading(ui, cat);
+        let tile_w = ((ui.available_width() - 8.0) * 0.5 - 18.0).max(74.0);
         egui::Grid::new(format!("add_grid_{}", cat))
             .num_columns(2)
             .spacing([8.0, 8.0])
@@ -153,7 +155,7 @@ fn draw_add_elements_drawer(ui: &mut Ui, state: &mut StudioState) {
 
                     let resp = tile
                         .show(ui, |ui| {
-                            ui.set_width(106.0);
+                            ui.set_width(tile_w);
                             ui.vertical_centered(|ui| {
                                 ui.label(
                                     RichText::new(kind.short_icon())

@@ -55,9 +55,12 @@ pub fn draw_canvas(ctx: &egui::Context, state: &mut StudioState) {
                 return;
             };
 
-            let zoom = state.zoom;
             let vp = state.viewport;
             let vp_width = vp.width_px();
+            if state.auto_fit_zoom {
+                state.zoom = ((panel_rect.width() - 56.0).max(240.0) / vp_width).clamp(0.35, 1.0);
+            }
+            let zoom = state.zoom;
             let artboard_w_screen = vp_width * zoom;
             let theme = state.project.theme.clone();
             let assets = state.project.assets.clone();
@@ -270,9 +273,50 @@ pub fn draw_canvas(ctx: &egui::Context, state: &mut StudioState) {
                                         continue;
                                     }
 
-                                    // Paint element WYSIWYG visuals
+                                    // Register 8 resize handles BEFORE element body interaction so corner/edge drags take priority
+                                    if is_el_selected && !el.locked {
+                                        for (handle, h_pos) in resize_handle_positions(el_screen_rect) {
+                                            let h_rect = Rect::from_center_size(h_pos, Vec2::splat(9.0));
+                                            let h_resp = ui.interact(
+                                                h_rect.expand(4.0),
+                                                ui.make_persistent_id(format!(
+                                                    "rh_{}_{:?}",
+                                                    el.id, handle
+                                                )),
+                                                Sense::drag(),
+                                            );
+                                            if h_resp.hovered() {
+                                                hover_cursor = Some(cursor_for_handle(handle));
+                                            }
+                                            if h_resp.drag_started() && state.drag_mode.is_none() {
+                                                if let Some(pos) = ctx.pointer_interact_pos() {
+                                                    let base_rect = match vp {
+                                                        ViewportMode::Desktop => el.rect,
+                                                        ViewportMode::Tablet => {
+                                                            el.tablet_rect.unwrap_or(el_canvas_rect)
+                                                        }
+                                                        ViewportMode::Mobile => {
+                                                            el.mobile_rect.unwrap_or(el_canvas_rect)
+                                                        }
+                                                    };
+                                                    state.drag_mode = Some(DragMode::ResizeElement {
+                                                        section_id: sec.id.clone(),
+                                                        element_id: el.id.clone(),
+                                                        handle,
+                                                        start_rect: base_rect,
+                                                        start_pointer: pos,
+                                                        pre_drag_snapshot: state.project.clone(),
+                                                    });
+                                                    clicked_element = true;
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    // Paint element WYSIWYG visuals clipped to element bounds
+                                    let el_painter = painter.with_clip_rect(el_screen_rect.intersect(sec_rect));
                                     paint_element(
-                                        &painter,
+                                        &el_painter,
                                         el_screen_rect,
                                         el,
                                         zoom,
@@ -325,7 +369,7 @@ pub fn draw_canvas(ctx: &egui::Context, state: &mut StudioState) {
                                             CursorIcon::Grab
                                         });
                                         if !is_el_selected {
-                                            painter.rect_stroke(
+                                            ui.painter().rect_stroke(
                                                 el_screen_rect,
                                                 CornerRadius::same(2),
                                                 Stroke::new(1.0_f32, Color32::from_rgba_unmultiplied(203, 213, 225, 140)),
@@ -370,9 +414,10 @@ pub fn draw_canvas(ctx: &egui::Context, state: &mut StudioState) {
                                         }
                                     }
 
-                                    // Selection bounding box & 8 resize handles
+                                    // Selection bounding box & 8 resize handles painted on unclipped scroll-area painter
                                     if is_el_selected {
-                                        painter.rect_stroke(
+                                        let overlay = ui.painter();
+                                        overlay.rect_stroke(
                                             el_screen_rect,
                                             CornerRadius::same(2),
                                             Stroke::new(1.5_f32, WHITE),
@@ -382,14 +427,14 @@ pub fn draw_canvas(ctx: &egui::Context, state: &mut StudioState) {
                                         // Element floating label pill
                                         let badge_pos = Pos2::new(
                                             el_screen_rect.min.x,
-                                            (el_screen_rect.min.y - 18.0).max(sec_rect.min.y),
+                                            (el_screen_rect.min.y - 18.0).max(panel_rect.min.y + 4.0),
                                         );
                                         let pill_rect = Rect::from_min_size(
                                             badge_pos,
-                                            egui::vec2(120.0, 16.0),
+                                            egui::vec2(124.0, 16.0),
                                         );
-                                        painter.rect_filled(pill_rect, CornerRadius::same(3), WHITE);
-                                        painter.text(
+                                        overlay.rect_filled(pill_rect, CornerRadius::same(3), WHITE);
+                                        overlay.text(
                                             pill_rect.min + egui::vec2(6.0, 8.0),
                                             Align2::LEFT_CENTER,
                                             el.name.chars().take(16).collect::<String>(),
@@ -398,47 +443,15 @@ pub fn draw_canvas(ctx: &egui::Context, state: &mut StudioState) {
                                         );
 
                                         if !el.locked {
-                                            for (handle, h_pos) in resize_handle_positions(el_screen_rect) {
-                                                let h_rect = Rect::from_center_size(h_pos, Vec2::splat(8.0));
-                                                let h_resp = ui.interact(
-                                                    h_rect.expand(3.0),
-                                                    ui.make_persistent_id(format!(
-                                                        "rh_{}_{:?}",
-                                                        el.id, handle
-                                                    )),
-                                                    Sense::drag(),
-                                                );
-                                                painter.rect_filled(h_rect, CornerRadius::same(1), WHITE);
-                                                painter.rect_stroke(
+                                            for (_, h_pos) in resize_handle_positions(el_screen_rect) {
+                                                let h_rect = Rect::from_center_size(h_pos, Vec2::splat(9.0));
+                                                overlay.rect_filled(h_rect, CornerRadius::same(2), WHITE);
+                                                overlay.rect_stroke(
                                                     h_rect,
-                                                    CornerRadius::same(1),
+                                                    CornerRadius::same(2),
                                                     Stroke::new(1.0_f32, SLATE_INK),
                                                     egui::StrokeKind::Inside,
                                                 );
-                                                if h_resp.hovered() {
-                                                    hover_cursor = Some(cursor_for_handle(handle));
-                                                }
-                                                if h_resp.drag_started() && state.drag_mode.is_none() {
-                                                    if let Some(pos) = ctx.pointer_interact_pos() {
-                                                        let base_rect = match vp {
-                                                            ViewportMode::Desktop => el.rect,
-                                                            ViewportMode::Tablet => {
-                                                                el.tablet_rect.unwrap_or(el_canvas_rect)
-                                                            }
-                                                            ViewportMode::Mobile => {
-                                                                el.mobile_rect.unwrap_or(el_canvas_rect)
-                                                            }
-                                                        };
-                                                        state.drag_mode = Some(DragMode::ResizeElement {
-                                                            section_id: sec.id.clone(),
-                                                            element_id: el.id.clone(),
-                                                            handle,
-                                                            start_rect: base_rect,
-                                                            start_pointer: pos,
-                                                            pre_drag_snapshot: state.project.clone(),
-                                                        });
-                                                    }
-                                                }
                                             }
                                         }
                                     }
@@ -874,37 +887,54 @@ fn handle_active_drag(
             ..
         } => {
             let delta = (pos - start_pointer) / zoom;
+            let scale_x = if vp == ViewportMode::Desktop {
+                max_content / 1200.0
+            } else {
+                1.0
+            };
+            let dx = delta.x / scale_x;
+            let dy = delta.y;
+
             let mut r = start_rect;
+            let orig_right = start_rect.x + start_rect.w;
+            let orig_bottom = start_rect.y + start_rect.h;
 
             match handle {
                 ResizeHandle::E | ResizeHandle::NE | ResizeHandle::SE => {
-                    r.w = (start_rect.w + delta.x).max(20.0);
+                    let mut nw = (start_rect.w + dx).max(20.0);
+                    if snap {
+                        nw = ((nw / 8.0).round() * 8.0).max(20.0);
+                    }
+                    r.w = nw;
                 }
                 ResizeHandle::W | ResizeHandle::NW | ResizeHandle::SW => {
-                    let nw = (start_rect.w - delta.x).max(20.0);
-                    r.x = start_rect.x + (start_rect.w - nw);
-                    r.w = nw;
+                    let mut nx = (start_rect.x + dx).min(orig_right - 20.0).max(0.0);
+                    if snap {
+                        nx = ((nx / 8.0).round() * 8.0).min(orig_right - 20.0).max(0.0);
+                    }
+                    r.x = nx;
+                    r.w = (orig_right - nx).max(20.0);
                 }
                 _ => {}
             }
 
             match handle {
                 ResizeHandle::S | ResizeHandle::SE | ResizeHandle::SW => {
-                    r.h = (start_rect.h + delta.y).max(2.0);
-                }
-                ResizeHandle::N | ResizeHandle::NE | ResizeHandle::NW => {
-                    let nh = (start_rect.h - delta.y).max(2.0);
-                    r.y = start_rect.y + (start_rect.h - nh);
+                    let mut nh = (start_rect.h + dy).max(2.0);
+                    if snap {
+                        nh = ((nh / 8.0).round() * 8.0).max(2.0);
+                    }
                     r.h = nh;
                 }
+                ResizeHandle::N | ResizeHandle::NE | ResizeHandle::NW => {
+                    let mut ny = (start_rect.y + dy).min(orig_bottom - 2.0).max(0.0);
+                    if snap {
+                        ny = ((ny / 8.0).round() * 8.0).min(orig_bottom - 2.0).max(0.0);
+                    }
+                    r.y = ny;
+                    r.h = (orig_bottom - ny).max(2.0);
+                }
                 _ => {}
-            }
-
-            if snap {
-                r.x = (r.x / 8.0).round() * 8.0;
-                r.y = (r.y / 8.0).round() * 8.0;
-                r.w = ((r.w / 8.0).round() * 8.0).max(20.0);
-                r.h = ((r.h / 8.0).round() * 8.0).max(2.0);
             }
 
             if let Some(page) = state.project.find_page_mut(&page_id) {

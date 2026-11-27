@@ -108,15 +108,17 @@ impl WebsirApp {
             return;
         }
         if ctrl && ctx.input(|i| i.key_pressed(egui::Key::Num0)) {
-            self.state.zoom = 0.85;
+            self.state.auto_fit_zoom = true;
             return;
         }
         if ctrl && ctx.input(|i| i.key_pressed(egui::Key::Equals) || i.key_pressed(egui::Key::Plus)) {
+            self.state.auto_fit_zoom = false;
             self.state.zoom = (self.state.zoom + 0.1).min(1.5);
             return;
         }
         if ctrl && ctx.input(|i| i.key_pressed(egui::Key::Minus)) {
-            self.state.zoom = (self.state.zoom - 0.1).max(0.45);
+            self.state.auto_fit_zoom = false;
+            self.state.zoom = (self.state.zoom - 0.1).max(0.35);
             return;
         }
 
