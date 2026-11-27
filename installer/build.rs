@@ -28,7 +28,7 @@ fn main() {
         let mut res = winresource::WindowsResource::new();
         res.set_icon(ico_path.to_str().unwrap());
         res.set("ProductName", "Weysko Visual Website Studio Setup");
-        res.set("FileDescription", "Weysko v1.3.1 Installer");
+        res.set("FileDescription", "Weysko v1.3.2 Installer");
         res.set("LegalCopyright", "Copyright (c) 2026 Aarav Das");
         res.set("OriginalFilename", "weysko-setup.exe");
         res.compile().expect("failed to compile installer resources");

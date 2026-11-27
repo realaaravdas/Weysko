@@ -40,6 +40,9 @@ enum CanvasAction {
 
 /// Renders the interactive Wix-style WYSIWYG artboard with drag/resize, smart guides, and inline text editing.
 pub fn draw_canvas(ctx: &egui::Context, state: &mut StudioState) {
+    #[cfg(test)]
+    state.last_canvas_strip_rects.clear();
+
     egui::CentralPanel::default()
         .frame(Frame::new().fill(BG_VOID).inner_margin(Margin::same(0)))
         .show(ctx, |ui| {
@@ -140,6 +143,8 @@ pub fn draw_canvas(ctx: &egui::Context, state: &mut StudioState) {
                                     egui::vec2(artboard_w_screen, effective_sec_h * zoom),
                                     Sense::click(),
                                 );
+                                #[cfg(test)]
+                                state.last_canvas_strip_rects.push(sec_rect);
 
                                 let painter = ui.painter_at(sec_rect);
                                 draw_section_background(

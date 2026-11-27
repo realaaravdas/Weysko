@@ -180,8 +180,8 @@
     canvas: {
       title: 'Freeform WYSIWYG Canvas with 8px Snap & Smart Guides',
       desc: 'Drag elements, resize via 8-point handles, edit typography inline, and inspect live X/Y coordinates.',
-      ctaText: 'Download Installer v1.3.1',
-      ctaHref: 'https://github.com/realaaravdas/Weysko/releases/download/v1.3.1/weysko-v1.3.1-windows-x86_64-setup.exe',
+      ctaText: 'Download Installer v1.3.2',
+      ctaHref: 'https://github.com/realaaravdas/Weysko/releases/download/v1.3.2/weysko-v1.3.2-windows-x86_64-setup.exe',
       mode: 'studio',
       badge: 'Canvas /index.html',
       headline: 'Critical infrastructure for modern web publishing.',

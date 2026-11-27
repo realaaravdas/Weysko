@@ -60,7 +60,7 @@ fn main() {
     let title = if is_uninstall {
         "Uninstall Weysko Visual Website Studio"
     } else {
-        "Weysko v1.3.1 Setup"
+        "Weysko v1.3.2 Setup"
     };
 
     let options = eframe::NativeOptions {
@@ -245,7 +245,7 @@ impl eframe::App for SetupApp {
                     paint_logo_mark(ui.painter(), mark_rect);
                     ui.add_space(6.0);
                     ui.label(RichText::new("WEYSKO").color(WHITE).strong().size(15.0));
-                    ui.label(RichText::new("v1.3.1 Setup").color(TEXT_MUTED).size(12.5));
+                    ui.label(RichText::new("v1.3.2 Setup").color(TEXT_MUTED).size(12.5));
                 });
             });
 
@@ -438,7 +438,7 @@ impl eframe::App for SetupApp {
                         ui.label(RichText::new(err).color(TEXT_PRIMARY).size(13.0));
                     } else {
                         ui.label(
-                            RichText::new("Weysko v1.3.1 Installed")
+                            RichText::new("Weysko v1.3.2 Installed")
                                 .color(WHITE)
                                 .strong()
                                 .size(21.0),

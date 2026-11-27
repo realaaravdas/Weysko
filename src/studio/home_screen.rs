@@ -287,9 +287,10 @@ fn draw_home_left_rail(ctx: &egui::Context, state: &mut StudioState, screen_w: f
 }
 
 fn draw_home_top_header(ui: &mut Ui, state: &mut StudioState, avail_w: f32) {
-    if avail_w >= 860.0 {
+    if avail_w >= 1040.0 {
         ui.horizontal(|ui| {
             ui.vertical(|ui| {
+                ui.set_max_width((avail_w - 430.0).max(260.0));
                 ui.label(
                     RichText::new("Start designing in Weysko Studio")
                         .color(WHITE)
@@ -356,7 +357,7 @@ fn draw_home_top_header(ui: &mut Ui, state: &mut StudioState, avail_w: f32) {
 
 fn draw_style_picker_strip(ui: &mut Ui, state: &mut StudioState) {
     let avail_w = ui.available_width();
-    if avail_w >= 540.0 {
+    if avail_w >= 640.0 {
         ui.horizontal(|ui| {
             section_heading(ui, "1. Choose Your Website Style");
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
@@ -399,27 +400,26 @@ fn draw_style_picker_strip(ui: &mut Ui, state: &mut StudioState) {
 
     let presets = PresetTheme::all();
     for row in presets.chunks(cols) {
-        ui.horizontal(|ui| {
+        ui.horizontal_top(|ui| {
             ui.spacing_mut().item_spacing.x = 10.0;
             for preset in row {
                 let selected = state.home_selected_theme == *preset;
                 let tokens = preset.to_tokens();
-                ui.allocate_ui_with_layout(
-                    egui::vec2(card_outer_w, 78.0),
-                    egui::Layout::top_down(egui::Align::LEFT),
-                    |ui| {
-                        ui.set_max_width(card_outer_w);
-                        let frame = Frame::new()
-                            .fill(if selected { BG_SURFACE } else { BG_PANEL })
-                            .stroke(Stroke::new(
-                                if selected { 1.6_f32 } else { 1.0_f32 },
-                                if selected { WHITE } else { BORDER_STRONG },
-                            ))
-                            .corner_radius(CornerRadius::same(9))
-                            .inner_margin(Margin::same(10));
+                ui.vertical(|ui| {
+                    ui.set_width(card_outer_w);
+                    ui.set_max_width(card_outer_w);
+                    let frame = Frame::new()
+                        .fill(if selected { BG_SURFACE } else { BG_PANEL })
+                        .stroke(Stroke::new(
+                            if selected { 1.6_f32 } else { 1.0_f32 },
+                            if selected { WHITE } else { BORDER_STRONG },
+                        ))
+                        .corner_radius(CornerRadius::same(9))
+                        .inner_margin(Margin::same(10));
 
-                        let resp = frame
-                            .show(ui, |ui| {
+                    let resp = frame
+                        .show(ui, |ui| {
+                            ui.vertical(|ui| {
                                 ui.set_width(inner_w);
                                 ui.set_max_width(inner_w);
                                 let (swatch_rect, _) = ui.allocate_exact_size(
@@ -428,29 +428,35 @@ fn draw_style_picker_strip(ui: &mut Ui, state: &mut StudioState) {
                                 );
                                 paint_theme_preview_bar(ui.painter(), swatch_rect, &tokens);
                                 ui.add_space(6.0);
-                                ui.label(
-                                    RichText::new(preset.label())
-                                        .color(WHITE)
-                                        .strong()
-                                        .size(12.0),
+                                ui.add(
+                                    egui::Label::new(
+                                        RichText::new(preset.label())
+                                            .color(WHITE)
+                                            .strong()
+                                            .size(12.0),
+                                    )
+                                    .truncate(),
                                 );
-                                ui.label(
-                                    RichText::new(&tokens.typography.heading_font)
-                                        .color(TEXT_DIM)
-                                        .size(10.5),
+                                ui.add(
+                                    egui::Label::new(
+                                        RichText::new(&tokens.typography.heading_font)
+                                            .color(TEXT_DIM)
+                                            .size(10.5),
+                                    )
+                                    .truncate(),
                                 );
-                            })
-                            .response
-                            .interact(egui::Sense::click());
+                            });
+                        })
+                        .response
+                        .interact(egui::Sense::click());
 
-                        if resp.hovered() {
-                            ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
-                        }
-                        if resp.clicked() {
-                            state.home_selected_theme = *preset;
-                        }
-                    },
-                );
+                    if resp.hovered() {
+                        ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
+                    }
+                    if resp.clicked() {
+                        state.home_selected_theme = *preset;
+                    }
+                });
             }
         });
         ui.add_space(10.0);
@@ -488,17 +494,19 @@ fn draw_home_overview(ui: &mut Ui, state: &mut StudioState) {
         .collect();
 
     if entries.is_empty() {
+        let inner_w = (avail_w - 48.0).max(180.0);
         Frame::new()
             .fill(BG_PANEL)
             .stroke(Stroke::new(1.0_f32, BORDER_STRONG))
             .corner_radius(CornerRadius::same(10))
             .inner_margin(Margin::same(16))
             .show(ui, |ui| {
-                ui.set_width((avail_w - 48.0).max(180.0));
-                ui.set_max_width((avail_w - 48.0).max(180.0));
-                if avail_w >= 720.0 {
+                ui.set_width(inner_w);
+                ui.set_max_width(inner_w);
+                if avail_w >= 860.0 {
                     ui.horizontal(|ui| {
                         ui.vertical(|ui| {
+                            ui.set_max_width((inner_w - 360.0).max(200.0));
                             ui.label(
                                 RichText::new("No past .weysko projects recorded yet")
                                     .color(WHITE)
@@ -580,10 +588,12 @@ fn draw_home_overview(ui: &mut Ui, state: &mut StudioState) {
             .inner_margin(Margin::symmetric(14, 10))
             .show(ui, |ui| {
                 ui.set_width(row_w);
-                if avail_w >= 640.0 {
+                ui.set_max_width(row_w);
+                if avail_w >= 680.0 {
                     ui.horizontal(|ui| {
                         ui.vertical(|ui| {
-                            ui.horizontal(|ui| {
+                            ui.set_max_width((row_w - 110.0).max(160.0));
+                            ui.horizontal_wrapped(|ui| {
                                 ui.label(RichText::new(&entry.name).color(WHITE).strong().size(13.5));
                                 Frame::new()
                                     .fill(BG_SURFACE)
@@ -714,25 +724,24 @@ fn draw_template_cards_grid(ui: &mut Ui, state: &mut StudioState, compact: bool)
     let tokens = state.home_selected_theme.to_tokens();
 
     for row in templates.chunks(cols) {
-        ui.horizontal(|ui| {
+        ui.horizontal_top(|ui| {
             ui.spacing_mut().item_spacing.x = 12.0;
             for tmpl in row {
                 let is_example = *tmpl == StarterTemplate::MeridianDemo;
-                ui.allocate_ui_with_layout(
-                    egui::vec2(card_outer_w, card_min_h),
-                    egui::Layout::top_down(egui::Align::LEFT),
-                    |ui| {
-                        ui.set_max_width(card_outer_w);
-                        let frame = Frame::new()
-                            .fill(BG_PANEL)
-                            .stroke(Stroke::new(
-                                1.0_f32,
-                                if is_example { CYAN_BRAND } else { BORDER_STRONG },
-                            ))
-                            .corner_radius(CornerRadius::same(10))
-                            .inner_margin(Margin::same(12));
+                ui.vertical(|ui| {
+                    ui.set_width(card_outer_w);
+                    ui.set_max_width(card_outer_w);
+                    let frame = Frame::new()
+                        .fill(BG_PANEL)
+                        .stroke(Stroke::new(
+                            1.0_f32,
+                            if is_example { CYAN_BRAND } else { BORDER_STRONG },
+                        ))
+                        .corner_radius(CornerRadius::same(10))
+                        .inner_margin(Margin::same(12));
 
-                        frame.show(ui, |ui| {
+                    frame.show(ui, |ui| {
+                        ui.vertical(|ui| {
                             ui.set_width(inner_w);
                             ui.set_max_width(inner_w);
                             ui.set_min_height(card_min_h - 26.0);
@@ -781,8 +790,8 @@ fn draw_template_cards_grid(ui: &mut Ui, state: &mut StudioState, compact: bool)
                                 );
                             }
                         });
-                    },
-                );
+                    });
+                });
             }
         });
         ui.add_space(12.0);
@@ -796,115 +805,130 @@ fn draw_new_from_scratch(ui: &mut Ui, state: &mut StudioState) {
     let two_col = avail_w >= 720.0;
 
     let draw_form = |ui: &mut Ui, state: &mut StudioState, card_w: f32| {
+        let inner_w = (card_w - 34.0).max(180.0);
         Frame::new()
             .fill(BG_PANEL)
             .stroke(Stroke::new(1.0_f32, BORDER_STRONG))
             .corner_radius(CornerRadius::same(10))
             .inner_margin(Margin::same(16))
             .show(ui, |ui| {
-                ui.set_width((card_w - 34.0).max(180.0));
-                section_heading(ui, "New Custom Website Details");
-                ui.add_space(6.0);
+                ui.vertical(|ui| {
+                    ui.set_width(inner_w);
+                    ui.set_max_width(inner_w);
+                    section_heading(ui, "New Custom Website Details");
+                    ui.add_space(6.0);
 
-                ui.label(RichText::new("Website Name").color(TEXT_MUTED).size(12.0));
-                ui.add(
-                    egui::TextEdit::singleline(&mut state.scratch_site_name)
-                        .hint_text("My Studio Site")
-                        .desired_width(f32::INFINITY),
-                );
-                ui.add_space(8.0);
-
-                ui.label(
-                    RichText::new("Publish Base URL (optional)")
-                        .color(TEXT_MUTED)
-                        .size(12.0),
-                );
-                ui.add(
-                    egui::TextEdit::singleline(&mut state.scratch_base_url)
-                        .hint_text("https://example.com")
-                        .desired_width(f32::INFINITY),
-                );
-                ui.add_space(12.0);
-
-                ui.label(
-                    RichText::new("Starting Canvas Structure")
-                        .color(TEXT_MUTED)
-                        .size(12.0),
-                );
-                ui.add_space(4.0);
-                for (mode, title, desc) in [
-                    (
-                        0usize,
-                        "Blank Canvas (Single Page)",
-                        "Sticky header, empty 400px strip & footer",
-                    ),
-                    (
-                        1usize,
-                        "Landing Page Skeleton",
-                        "Header navbar, centered hero, 3-column features & footer",
-                    ),
-                    (
-                        2usize,
-                        "3-Page Multi-Page Starter",
-                        "Home, About, and Contact pages wired together cleanly",
-                    ),
-                ] {
-                    ui.radio_value(
-                        &mut state.scratch_pages_mode,
-                        mode,
-                        RichText::new(title).color(WHITE).strong().size(12.5),
+                    ui.label(RichText::new("Website Name").color(TEXT_MUTED).size(12.0));
+                    ui.add(
+                        egui::TextEdit::singleline(&mut state.scratch_site_name)
+                            .hint_text("My Studio Site")
+                            .desired_width(f32::INFINITY),
                     );
-                    ui.label(RichText::new(format!("    {}", desc)).color(TEXT_DIM).size(11.0));
-                    ui.add_space(4.0);
-                }
+                    ui.add_space(8.0);
 
-                ui.add_space(12.0);
-                if primary_white_button(ui, "Create & Open in Studio ->").clicked() {
-                    state.create_from_scratch();
-                }
+                    ui.label(
+                        RichText::new("Publish Base URL (optional)")
+                            .color(TEXT_MUTED)
+                            .size(12.0),
+                    );
+                    ui.add(
+                        egui::TextEdit::singleline(&mut state.scratch_base_url)
+                            .hint_text("https://example.com")
+                            .desired_width(f32::INFINITY),
+                    );
+                    ui.add_space(12.0);
+
+                    ui.label(
+                        RichText::new("Starting Canvas Structure")
+                            .color(TEXT_MUTED)
+                            .size(12.0),
+                    );
+                    ui.add_space(4.0);
+                    for (mode, title, desc) in [
+                        (
+                            0usize,
+                            "Blank Canvas (Single Page)",
+                            "Sticky header, empty 400px strip & footer",
+                        ),
+                        (
+                            1usize,
+                            "Landing Page Skeleton",
+                            "Header navbar, centered hero, 3-column features & footer",
+                        ),
+                        (
+                            2usize,
+                            "3-Page Multi-Page Starter",
+                            "Home, About, and Contact pages wired together cleanly",
+                        ),
+                    ] {
+                        ui.radio_value(
+                            &mut state.scratch_pages_mode,
+                            mode,
+                            RichText::new(title).color(WHITE).strong().size(12.5),
+                        );
+                        ui.label(RichText::new(format!("    {}", desc)).color(TEXT_DIM).size(11.0));
+                        ui.add_space(4.0);
+                    }
+
+                    ui.add_space(12.0);
+                    if primary_white_button(ui, "Create & Open in Studio ->").clicked() {
+                        state.create_from_scratch();
+                    }
+                });
             });
     };
 
     let draw_preview = |ui: &mut Ui, card_w: f32| {
+        let inner_w = (card_w - 34.0).max(180.0);
         Frame::new()
             .fill(BG_PANEL)
             .stroke(Stroke::new(1.0_f32, BORDER_STRONG))
             .corner_radius(CornerRadius::same(10))
             .inner_margin(Margin::same(16))
             .show(ui, |ui| {
-                let inner_w = (card_w - 34.0).max(180.0);
-                ui.set_width(inner_w);
-                section_heading(ui, "Live Style Preview");
-                ui.add_space(6.0);
-                let (rect, _) =
-                    ui.allocate_exact_size(egui::vec2(inner_w, 184.0), egui::Sense::hover());
-                paint_template_wireframe(
-                    ui.painter(),
-                    rect,
-                    StarterTemplate::SaasLanding,
-                    &tokens,
-                );
-                ui.add_space(10.0);
-                ui.label(
-                    RichText::new(format!("Style: {}", selected_theme.label()))
-                        .color(WHITE)
-                        .strong()
-                        .size(13.0),
-                );
-                ui.label(
-                    RichText::new(selected_theme.description())
-                        .color(TEXT_MUTED)
-                        .size(11.5),
-                );
+                ui.vertical(|ui| {
+                    ui.set_width(inner_w);
+                    ui.set_max_width(inner_w);
+                    section_heading(ui, "Live Style Preview");
+                    ui.add_space(6.0);
+                    let (rect, _) =
+                        ui.allocate_exact_size(egui::vec2(inner_w, 184.0), egui::Sense::hover());
+                    paint_template_wireframe(
+                        ui.painter(),
+                        rect,
+                        StarterTemplate::SaasLanding,
+                        &tokens,
+                    );
+                    ui.add_space(10.0);
+                    ui.label(
+                        RichText::new(format!("Style: {}", selected_theme.label()))
+                            .color(WHITE)
+                            .strong()
+                            .size(13.0),
+                    );
+                    ui.label(
+                        RichText::new(selected_theme.description())
+                            .color(TEXT_MUTED)
+                            .size(11.5),
+                    );
+                });
             });
     };
 
     if two_col {
         let half_w = (avail_w - 14.0) * 0.5;
-        ui.horizontal(|ui| {
+        ui.horizontal_top(|ui| {
             ui.spacing_mut().item_spacing.x = 14.0;
-            draw_form(ui, state, half_w);
-            draw_preview(ui, half_w);
+            ui.vertical(|ui| {
+                ui.set_width(half_w);
+                ui.set_max_width(half_w);
+                draw_form(ui, state, half_w);
+            });
+            ui.vertical(|ui| {
+                ui.set_width(half_w);
+                ui.set_max_width(half_w);
+                draw_preview(ui, half_w);
+            });
         });
     } else {
         draw_form(ui, state, avail_w);

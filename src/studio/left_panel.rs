@@ -160,52 +160,54 @@ fn draw_add_elements_drawer(ui: &mut Ui, state: &mut StudioState) {
         }
 
         section_heading(ui, cat);
-        let tile_w = ((ui.available_width() - 18.0) * 0.5 - 16.0).max(68.0);
-        egui::Grid::new(format!("add_grid_{}", cat))
-            .num_columns(2)
-            .spacing([8.0, 8.0])
-            .show(ui, |ui| {
-                for (idx, kind) in items.iter().enumerate() {
-                    let tile = Frame::new()
-                        .fill(BG_SURFACE)
-                        .stroke(Stroke::new(1.0_f32, BORDER_STRONG))
-                        .corner_radius(CornerRadius::same(7))
-                        .inner_margin(Margin::symmetric(8, 9));
+        let tile_outer_w = ((ui.available_width() - 12.0 - 8.0) * 0.5).floor().max(76.0);
+        let tile_inner_w = (tile_outer_w - 18.0).max(58.0);
+        for row in items.chunks(2) {
+            ui.horizontal_top(|ui| {
+                ui.spacing_mut().item_spacing.x = 8.0;
+                for kind in row {
+                    ui.vertical(|ui| {
+                        ui.set_width(tile_outer_w);
+                        ui.set_max_width(tile_outer_w);
+                        let tile = Frame::new()
+                            .fill(BG_SURFACE)
+                            .stroke(Stroke::new(1.0_f32, BORDER_STRONG))
+                            .corner_radius(CornerRadius::same(7))
+                            .inner_margin(Margin::symmetric(8, 9));
 
-                    let resp = tile
-                        .show(ui, |ui| {
-                            ui.set_width(tile_w);
-                            ui.vertical_centered(|ui| {
-                                ui.label(
-                                    RichText::new(kind.short_icon())
-                                        .color(WHITE)
-                                        .strong()
-                                        .size(13.0),
-                                );
-                                ui.add_space(2.0);
-                                ui.label(
-                                    RichText::new(kind.label())
-                                        .color(TEXT_MUTED)
-                                        .size(11.0),
-                                );
-                            });
-                        })
-                        .response
-                        .interact(egui::Sense::click());
+                        let resp = tile
+                            .show(ui, |ui| {
+                                ui.set_width(tile_inner_w);
+                                ui.vertical_centered(|ui| {
+                                    ui.label(
+                                        RichText::new(kind.short_icon())
+                                            .color(WHITE)
+                                            .strong()
+                                            .size(13.0),
+                                    );
+                                    ui.add_space(2.0);
+                                    ui.label(
+                                        RichText::new(kind.label())
+                                            .color(TEXT_MUTED)
+                                            .size(11.0),
+                                    );
+                                });
+                            })
+                            .response
+                            .interact(egui::Sense::click());
 
-                    if resp.hovered() {
-                        ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
-                    }
-                    if resp.clicked() {
-                        state.insert_element(*kind);
-                    }
-
-                    if idx % 2 == 1 {
-                        ui.end_row();
-                    }
+                        if resp.hovered() {
+                            ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
+                        }
+                        if resp.clicked() {
+                            state.insert_element(*kind);
+                        }
+                    });
                 }
             });
-        ui.add_space(6.0);
+            ui.add_space(8.0);
+        }
+        ui.add_space(4.0);
     }
 }
 
@@ -226,8 +228,10 @@ fn draw_sections_drawer(ui: &mut Ui, state: &mut StudioState) {
             draw_section_wireframe(ui.painter(), thumb_rect, *preset);
 
             ui.add_space(4.0);
+            let row_avail = ui.available_width();
             ui.horizontal(|ui| {
                 ui.vertical(|ui| {
+                    ui.set_max_width((row_avail - 78.0).max(68.0));
                     ui.label(RichText::new(preset.label()).color(WHITE).strong().size(12.5));
                     ui.label(
                         RichText::new(preset.category())
@@ -418,14 +422,23 @@ fn draw_layers_drawer(ui: &mut Ui, state: &mut StudioState) {
             .inner_margin(Margin::same(8));
 
         frame.show(ui, |ui| {
+            let hdr_avail = ui.available_width();
             ui.horizontal(|ui| {
-                if ui
-                    .selectable_label(sec_selected, RichText::new(&sec.name).strong().size(12.0))
-                    .clicked()
-                {
-                    state.selected_section_id = Some(sec.id.clone());
-                    state.selected_element_id = None;
-                }
+                ui.vertical(|ui| {
+                    ui.set_max_width((hdr_avail - 78.0).max(60.0));
+                    if ui
+                        .add(
+                            egui::Button::new(RichText::new(&sec.name).strong().size(12.0))
+                                .selected(sec_selected)
+                                .frame(false)
+                                .truncate(),
+                        )
+                        .clicked()
+                    {
+                        state.selected_section_id = Some(sec.id.clone());
+                        state.selected_element_id = None;
+                    }
+                });
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                     if ui.small_button("×").on_hover_text("Delete section").clicked() {
                         action = Some(LayerAction::DeleteSection(sec.id.clone()));

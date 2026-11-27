@@ -190,6 +190,8 @@ pub struct StudioState {
     pub preview_server: Option<PreviewServer>,
     pub preview_dirty: bool,
     pub last_window_width: f32,
+    #[cfg(test)]
+    pub last_canvas_strip_rects: Vec<egui::Rect>,
 }
 
 impl StudioState {
@@ -252,6 +254,8 @@ impl StudioState {
             preview_server: None,
             preview_dirty: false,
             last_window_width: 1280.0,
+            #[cfg(test)]
+            last_canvas_strip_rects: Vec::new(),
         }
     }
 

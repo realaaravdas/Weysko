@@ -15,7 +15,7 @@ use super::style::{
 
 pub fn draw_top_bar(ctx: &egui::Context, state: &mut StudioState) {
     let screen_w = ctx.screen_rect().width();
-    let multi_row = screen_w < 1180.0;
+    let multi_row = screen_w < 1360.0;
     let bar_h = if multi_row { 82.0 } else { 52.0 };
 
     egui::TopBottomPanel::top("weysko_top_bar")

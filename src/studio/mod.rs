@@ -216,7 +216,13 @@ impl eframe::App for WeyskoApp {
 mod tests {
     use super::*;
 
-    fn run_frames_at(app: &mut WeyskoApp, w: f32, h: f32) -> (egui::Rect, Vec<(egui::Id, egui::Rect)>) {
+    struct FrameRunReport {
+        used_rect: egui::Rect,
+        wide_rects: Vec<(egui::Id, egui::Rect)>,
+        text_boxes: Vec<(String, egui::Rect)>,
+    }
+
+    fn run_frames_at(app: &mut WeyskoApp, w: f32, h: f32) -> FrameRunReport {
         let ctx = egui::Context::default();
         let raw = egui::RawInput {
             screen_rect: Some(egui::Rect::from_min_size(
@@ -227,8 +233,10 @@ mod tests {
         };
         let mut center_used = egui::Rect::NOTHING;
         let mut wide_rects = Vec::new();
+        let mut text_boxes = Vec::new();
         for _ in 0..3 {
             wide_rects.clear();
+            text_boxes.clear();
             let out = ctx.run(raw.clone(), |ctx| {
                 app.draw_frame(ctx);
                 center_used = ctx.used_rect();
@@ -238,46 +246,245 @@ mod tests {
                 if r.max.x > w + 2.0 {
                     wide_rects.push((egui::Id::new("shape"), r));
                 }
+                collect_text_boxes(
+                    &clipped.shape,
+                    clipped.clip_rect.intersect(egui::Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        egui::vec2(w, h),
+                    )),
+                    &mut text_boxes,
+                );
             }
         }
-        (center_used, wide_rects)
+        FrameRunReport {
+            used_rect: center_used,
+            wide_rects,
+            text_boxes,
+        }
+    }
+
+    fn collect_text_boxes(
+        shape: &egui::epaint::Shape,
+        clip_rect: egui::Rect,
+        out: &mut Vec<(String, egui::Rect)>,
+    ) {
+        match shape {
+            egui::epaint::Shape::Text(text_shape) => {
+                let raw_text = text_shape.galley.text().trim();
+                if raw_text.is_empty() {
+                    return;
+                }
+                let vis = text_shape.visual_bounding_rect().intersect(clip_rect);
+                if vis.is_positive() && vis.width() > 1.0 && vis.height() > 1.0 {
+                    out.push((raw_text.to_string(), vis));
+                }
+            }
+            egui::epaint::Shape::Vec(shapes) => {
+                for child in shapes {
+                    collect_text_boxes(child, clip_rect, out);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    fn find_text_overlaps(text_boxes: &[(String, egui::Rect)]) -> Vec<String> {
+        let mut overlaps = Vec::new();
+        for i in 0..text_boxes.len() {
+            for j in (i + 1)..text_boxes.len() {
+                let (ref ta, ra) = text_boxes[i];
+                let (ref tb, rb) = text_boxes[j];
+                let inter = ra.intersect(rb);
+                if inter.is_positive() && inter.width() > 4.0 && inter.height() > 4.0 {
+                    overlaps.push(format!(
+                        "{:?} {:?} overlaps {:?} {:?} (inter={}x{})",
+                        ta,
+                        ra,
+                        tb,
+                        rb,
+                        inter.width(),
+                        inter.height()
+                    ));
+                }
+            }
+        }
+        overlaps
     }
 
     #[test]
     fn start_and_editor_render_cleanly_at_non_fullscreen_sizes() {
-        for (w, h) in [(680.0, 480.0), (820.0, 560.0), (980.0, 660.0), (1280.0, 780.0)] {
-            let mut home_app = WeyskoApp::new_home();
-            let (used_home, wide_home) = run_frames_at(&mut home_app, w, h);
-            assert!(
-                used_home.max.x <= w + 2.0,
-                "Home screen exceeded width {} at {}x{}: {:?} wide_shapes={:?}",
-                w,
-                w,
-                h,
-                used_home,
-                wide_home
-            );
+        use super::recent::RecentProjectEntry;
+        use super::state::{DrawerTab, HomeSectionTab};
+        use std::path::PathBuf;
+
+        let sizes = [
+            (680.0, 480.0),
+            (820.0, 560.0),
+            (980.0, 660.0),
+            (1280.0, 780.0),
+            (1440.0, 900.0),
+        ];
+
+        for (w, h) in sizes {
+            for tab in [
+                HomeSectionTab::Home,
+                HomeSectionTab::Templates,
+                HomeSectionTab::NewFromScratch,
+            ] {
+                for with_recents in [false, true] {
+                    if tab != HomeSectionTab::Home && with_recents {
+                        continue;
+                    }
+                    let mut home_app = WeyskoApp::new_home();
+                    home_app.state.home_tab = tab;
+                    if with_recents {
+                        home_app.state.recent_projects.entries.push(RecentProjectEntry {
+                            name: "Meridian Cloud Flagship Production Portal".into(),
+                            path: PathBuf::from(
+                                r"C:\Users\developer\Documents\clients\meridian\meridian-cloud.weysko",
+                            ),
+                            theme_label: "Obsidian Slate".into(),
+                            page_count: 3,
+                            element_count: 24,
+                            opened_at_unix: 1_795_000_000,
+                        });
+                    } else {
+                        home_app.state.recent_projects.entries.clear();
+                    }
+
+                    let FrameRunReport {
+                        used_rect: used_home,
+                        wide_rects: wide_home,
+                        text_boxes: texts_home,
+                    } = run_frames_at(&mut home_app, w, h);
+                    assert!(
+                        used_home.max.x <= w + 2.0,
+                        "Home ({:?}, recents={}) exceeded width {} at {}x{}: {:?} wide_shapes={:?}",
+                        tab,
+                        with_recents,
+                        w,
+                        w,
+                        h,
+                        used_home,
+                        wide_home
+                    );
+                    let overlaps = find_text_overlaps(&texts_home);
+                    assert!(
+                        overlaps.is_empty(),
+                        "Home ({:?}, recents={}) text overlap at {}x{}:\n{}",
+                        tab,
+                        with_recents,
+                        w,
+                        h,
+                        overlaps.join("\n")
+                    );
+                }
+            }
 
             let mut editor_app = WeyskoApp::new(StarterTemplate::MeridianDemo.build());
-            let (used_ed, wide_ed) = run_frames_at(&mut editor_app, w, h);
-            assert!(
-                used_ed.max.x <= w + 2.0,
-                "Editor screen exceeded width {} at {}x{}: {:?} wide_shapes={:?}",
-                w,
-                w,
-                h,
-                used_ed,
-                wide_ed
-            );
-            assert!(
-                editor_app.state.zoom >= 0.24 && editor_app.state.zoom <= 1.0,
-                "Zoom out of expected fit bounds at {}x{}: {}",
-                w,
-                h,
-                editor_app.state.zoom
-            );
-            if w < 1080.0 {
-                assert!(!editor_app.state.show_inspector);
+            let first_el = editor_app
+                .state
+                .project
+                .pages
+                .first()
+                .and_then(|p| p.sections.first())
+                .and_then(|s| s.elements.first())
+                .map(|e| e.id.clone());
+            editor_app.state.selected_element_id = first_el;
+
+            for drawer in DrawerTab::all() {
+                editor_app.state.active_drawer = Some(*drawer);
+                let FrameRunReport {
+                    used_rect: used_ed,
+                    wide_rects: wide_ed,
+                    text_boxes: texts_ed,
+                } = run_frames_at(&mut editor_app, w, h);
+                assert!(
+                    used_ed.max.x <= w + 2.0,
+                    "Editor ({:?}) exceeded width {} at {}x{}: {:?} wide_shapes={:?}",
+                    drawer,
+                    w,
+                    w,
+                    h,
+                    used_ed,
+                    wide_ed
+                );
+                assert!(
+                    editor_app.state.zoom >= 0.24 && editor_app.state.zoom <= 1.0,
+                    "Zoom out of expected fit bounds at {}x{}: {}",
+                    w,
+                    h,
+                    editor_app.state.zoom
+                );
+                if w < 1080.0 {
+                    assert!(!editor_app.state.show_inspector);
+                }
+                let chrome_texts: Vec<_> = texts_ed
+                    .into_iter()
+                    .filter(|(_, r)| {
+                        let c = r.center();
+                        !editor_app
+                            .state
+                            .last_canvas_strip_rects
+                            .iter()
+                            .any(|strip| strip.contains(c))
+                    })
+                    .collect();
+                let overlaps = find_text_overlaps(&chrome_texts);
+                assert!(
+                    overlaps.is_empty(),
+                    "Editor chrome ({:?}) text overlap at {}x{}:\n{}",
+                    drawer,
+                    w,
+                    h,
+                    overlaps.join("\n")
+                );
+            }
+
+            // Also verify Inspector panels cleanly at every size across Content / Style / Layout tabs.
+            editor_app.state.active_drawer = None;
+            editor_app.state.show_inspector = true;
+            for itab in [
+                super::state::InspectorTab::Content,
+                super::state::InspectorTab::Style,
+                super::state::InspectorTab::Layout,
+            ] {
+                editor_app.state.inspector_tab = itab;
+                let FrameRunReport {
+                    used_rect: used_ed,
+                    wide_rects: wide_ed,
+                    text_boxes: texts_ed,
+                } = run_frames_at(&mut editor_app, w, h);
+                assert!(
+                    used_ed.max.x <= w + 2.0,
+                    "Editor Inspector ({:?}) exceeded width {} at {}x{}: {:?} wide_shapes={:?}",
+                    itab,
+                    w,
+                    w,
+                    h,
+                    used_ed,
+                    wide_ed
+                );
+                let chrome_texts: Vec<_> = texts_ed
+                    .into_iter()
+                    .filter(|(_, r)| {
+                        let c = r.center();
+                        !editor_app
+                            .state
+                            .last_canvas_strip_rects
+                            .iter()
+                            .any(|strip| strip.contains(c))
+                    })
+                    .collect();
+                let overlaps = find_text_overlaps(&chrome_texts);
+                assert!(
+                    overlaps.is_empty(),
+                    "Editor Inspector ({:?}) text overlap at {}x{}:\n{}",
+                    itab,
+                    w,
+                    h,
+                    overlaps.join("\n")
+                );
             }
         }
     }
