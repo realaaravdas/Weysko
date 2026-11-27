@@ -643,7 +643,7 @@ pub fn draw_canvas(ctx: &egui::Context, state: &mut StudioState) {
                         let hud_pos = ptr + egui::vec2(14.0, 16.0);
                         let painter = ctx.layer_painter(egui::LayerId::new(
                             egui::Order::Tooltip,
-                            egui::Id::new("websir_drag_hud"),
+                            egui::Id::new("weysko_drag_hud"),
                         ));
                         let rect = Rect::from_min_size(hud_pos, egui::vec2(176.0, 24.0));
                         painter.rect_filled(rect, CornerRadius::same(5), BG_PANEL);

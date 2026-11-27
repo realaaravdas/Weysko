@@ -3,7 +3,7 @@ use std::io::Write;
 
 use image::codecs::png::PngEncoder;
 use image::{ExtendedColorType, ImageEncoder};
-use websir::studio::branding::render_logo_rgba;
+use weysko::studio::branding::render_logo_rgba;
 
 fn main() {
     let sizes = [16u32, 32, 48, 64, 256];
@@ -19,7 +19,7 @@ fn main() {
     }
 
     // Standard Windows ICO container with PNG frames
-    let mut out = File::create("assets/websir.ico").expect("create assets/websir.ico");
+    let mut out = File::create("assets/weysko.ico").expect("create assets/weysko.ico");
     // ICONDIR: reserved(2)=0, type(2)=1 (ICO), count(2)
     out.write_all(&0u16.to_le_bytes()).unwrap();
     out.write_all(&1u16.to_le_bytes()).unwrap();
@@ -51,5 +51,5 @@ fn main() {
     for (_, png) in &frames {
         out.write_all(png).unwrap();
     }
-    println!("Generated assets/websir.ico ({} frames)", frames.len());
+    println!("Generated assets/weysko.ico ({} frames)", frames.len());
 }

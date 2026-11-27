@@ -14,7 +14,7 @@ use super::style::{
 
 pub fn draw_left_panel(ctx: &egui::Context, state: &mut StudioState) {
     // 1. Wix-style narrow vertical icon rail
-    egui::SidePanel::left("websir_left_rail")
+    egui::SidePanel::left("weysko_left_rail")
         .exact_width(54.0)
         .resizable(false)
         .frame(
@@ -67,7 +67,7 @@ pub fn draw_left_panel(ctx: &egui::Context, state: &mut StudioState) {
 
     // 2. Resizable Collapsible Drawer
     if let Some(tab) = state.active_drawer {
-        egui::SidePanel::left("websir_left_drawer")
+        egui::SidePanel::left("weysko_left_drawer")
             .default_width(244.0)
             .width_range(200.0..=340.0)
             .resizable(true)

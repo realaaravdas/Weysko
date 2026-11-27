@@ -58,9 +58,9 @@ fn main() {
 
     let is_uninstall = args.iter().any(|a| a == "--uninstall");
     let title = if is_uninstall {
-        "Uninstall Websir Visual Website Studio"
+        "Uninstall Weysko Visual Website Studio"
     } else {
-        "Websir v1.1.0 Setup"
+        "Weysko v1.2.0 Setup"
     };
 
     let options = eframe::NativeOptions {
@@ -244,8 +244,8 @@ impl eframe::App for SetupApp {
                         ui.allocate_exact_size(egui::vec2(28.0, 24.0), egui::Sense::hover());
                     paint_logo_mark(ui.painter(), mark_rect);
                     ui.add_space(6.0);
-                    ui.label(RichText::new("WEBSIR").color(WHITE).strong().size(15.0));
-                    ui.label(RichText::new("v1.1.0 Setup").color(TEXT_MUTED).size(12.5));
+                    ui.label(RichText::new("WEYSKO").color(WHITE).strong().size(15.0));
+                    ui.label(RichText::new("v1.2.0 Setup").color(TEXT_MUTED).size(12.5));
                 });
             });
 
@@ -322,7 +322,7 @@ impl eframe::App for SetupApp {
             .show(ctx, |ui| match self.step {
                 WizardStep::Welcome => {
                     ui.label(
-                        RichText::new("Install Websir Visual Website Studio")
+                        RichText::new("Install Weysko Visual Website Studio")
                             .color(WHITE)
                             .strong()
                             .size(21.0),
@@ -330,7 +330,7 @@ impl eframe::App for SetupApp {
                     ui.add_space(10.0);
                     ui.label(
                         RichText::new(
-                            "Websir is a deterministic, zero-AI visual website designer and static site compiler written in Rust. Build responsive multi-page sites and export directly to any host or Google Sites.",
+                            "Weysko is a deterministic, zero-AI visual website designer and static site compiler written in Rust. Build responsive multi-page sites and export directly to any host or Google Sites.",
                         )
                         .color(TEXT_MUTED)
                         .size(13.5),
@@ -347,7 +347,7 @@ impl eframe::App for SetupApp {
                                 "• Native desktop WYSIWYG designer with dark minimalist slate workspace",
                                 "• 16 element primitives, 13 section strips, 5 templates, 6 curated themes",
                                 "• Export to Static Folder, ZIP Archive, Single-File HTML, or Google Sites",
-                                "• Includes headless CLI (`websir --export`, `websir --serve`)",
+                                "• Includes headless CLI (`weysko --export`, `weysko --serve`)",
                             ] {
                                 ui.label(RichText::new(item).color(TEXT_PRIMARY).size(12.5));
                             }
@@ -355,7 +355,7 @@ impl eframe::App for SetupApp {
                     ui.add_space(18.0);
                     ui.checkbox(
                         &mut self.accepted_license,
-                        "I accept the MIT License terms (2026 Websir Project)",
+                        "I accept the MIT License terms (2026 Weysko Project)",
                     );
                 }
                 WizardStep::Options => {
@@ -379,7 +379,7 @@ impl eframe::App for SetupApp {
                         }
                         if slate_btn(ui, "Browse...").clicked() {
                             if let Some(folder) = rfd::FileDialog::new().pick_folder() {
-                                self.config.install_dir = folder.join("Websir");
+                                self.config.install_dir = folder.join("Weysko");
                             }
                         }
                     });
@@ -387,17 +387,17 @@ impl eframe::App for SetupApp {
                     ui.add_space(18.0);
                     ui.label(RichText::new("System Integration").color(TEXT_MUTED).size(12.0));
                     ui.add_space(6.0);
-                    ui.checkbox(&mut self.config.create_start_menu, "Create Start Menu shortcuts (Websir + Uninstall)");
+                    ui.checkbox(&mut self.config.create_start_menu, "Create Start Menu shortcuts (Weysko + Uninstall)");
                     ui.checkbox(&mut self.config.create_desktop_shortcut, "Create Desktop shortcut");
-                    ui.checkbox(&mut self.config.add_to_path, "Add Websir CLI (`websir`) to User PATH");
-                    ui.checkbox(&mut self.config.associate_files, "Associate `.websir.json` project files with Websir");
+                    ui.checkbox(&mut self.config.add_to_path, "Add Weysko CLI (`weysko`) to User PATH");
+                    ui.checkbox(&mut self.config.associate_files, "Associate `.weysko.json` project files with Weysko");
                     ui.checkbox(&mut self.config.register_uninstaller, "Register in Windows Apps & Features");
                 }
                 WizardStep::Installing | WizardStep::Uninstalling => {
                     let heading = if self.step == WizardStep::Installing {
-                        "Installing Websir..."
+                        "Installing Weysko..."
                     } else {
-                        "Uninstalling Websir..."
+                        "Uninstalling Weysko..."
                     };
                     ui.label(RichText::new(heading).color(WHITE).strong().size(18.0));
                     ui.add_space(10.0);
@@ -438,7 +438,7 @@ impl eframe::App for SetupApp {
                         ui.label(RichText::new(err).color(TEXT_PRIMARY).size(13.0));
                     } else {
                         ui.label(
-                            RichText::new("Websir v1.1.0 Installed")
+                            RichText::new("Weysko v1.2.0 Installed")
                                 .color(WHITE)
                                 .strong()
                                 .size(21.0),
@@ -459,13 +459,13 @@ impl eframe::App for SetupApp {
                         ui.add_space(18.0);
                         ui.checkbox(
                             &mut self.launch_after_finish,
-                            "Launch Websir Visual Website Studio when setup closes",
+                            "Launch Weysko Visual Website Studio when setup closes",
                         );
                     }
                 }
                 WizardStep::UninstallConfirm => {
                     ui.label(
-                        RichText::new("Uninstall Websir Visual Website Studio?")
+                        RichText::new("Uninstall Weysko Visual Website Studio?")
                             .color(WHITE)
                             .strong()
                             .size(19.0),
@@ -473,7 +473,7 @@ impl eframe::App for SetupApp {
                     ui.add_space(12.0);
                     ui.label(
                         RichText::new(format!(
-                            "This will remove Websir from {}, delete Start Menu and Desktop shortcuts, clean up Windows Registry entries, and remove Websir from your User PATH.",
+                            "This will remove Weysko from {}, delete Start Menu and Desktop shortcuts, clean up Windows Registry entries, and remove Weysko from your User PATH.",
                             self.config.install_dir.display()
                         ))
                         .color(TEXT_MUTED)
@@ -486,10 +486,10 @@ impl eframe::App for SetupApp {
                         ui.add_space(8.0);
                         ui.label(RichText::new(err).color(TEXT_PRIMARY));
                     } else {
-                        ui.label(RichText::new("Websir Uninstalled").color(WHITE).strong().size(20.0));
+                        ui.label(RichText::new("Weysko Uninstalled").color(WHITE).strong().size(20.0));
                         ui.add_space(10.0);
                         ui.label(
-                            RichText::new("All Websir files, shortcuts, and registry entries have been removed.")
+                            RichText::new("All Weysko files, shortcuts, and registry entries have been removed.")
                                 .color(TEXT_MUTED)
                                 .size(13.5),
                         );

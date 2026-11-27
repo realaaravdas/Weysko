@@ -178,7 +178,7 @@ impl Page {
     }
 }
 
-/// Complete serializable Websir website project.
+/// Complete serializable Weysko website project.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct SiteProject {
     pub schema_version: u32,

@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use zip::ZipArchive;
 
 /// Embedded compressed application payload compiled in by `installer/build.rs`.
-pub const EMBEDDED_PAYLOAD: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/websir-payload.zip"));
+pub const EMBEDDED_PAYLOAD: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/weysko-payload.zip"));
 
 #[derive(Debug, Clone)]
 pub struct InstallConfig {
@@ -40,11 +40,11 @@ pub struct InstallSummary {
 
 pub fn default_install_dir() -> PathBuf {
     if let Ok(local_app) = env::var("LOCALAPPDATA") {
-        PathBuf::from(local_app).join("Programs").join("Websir")
+        PathBuf::from(local_app).join("Programs").join("Weysko")
     } else if let Ok(profile) = env::var("USERPROFILE") {
-        PathBuf::from(profile).join("Websir")
+        PathBuf::from(profile).join("Weysko")
     } else {
-        PathBuf::from("C:\\Websir")
+        PathBuf::from("C:\\Weysko")
     }
 }
 
@@ -57,7 +57,7 @@ pub fn run_install(
     fs::create_dir_all(&config.install_dir)
         .map_err(|e| format!("Failed to create {}: {}", config.install_dir.display(), e))?;
 
-    progress_cb(0.25, "Extracting Websir application files...");
+    progress_cb(0.25, "Extracting Weysko application files...");
     let installed_bytes = extract_payload_zip(EMBEDDED_PAYLOAD, &config.install_dir)
         .map_err(|e| format!("Extraction failed: {}", e))?;
 
@@ -71,19 +71,19 @@ pub fn run_install(
         }
     }
 
-    let websir_exe = config.install_dir.join("websir.exe");
-    let ico_path = config.install_dir.join("websir.ico");
+    let weysko_exe = config.install_dir.join("weysko.exe");
+    let ico_path = config.install_dir.join("weysko.ico");
 
     #[cfg(windows)]
     {
         if config.create_start_menu {
             progress_cb(0.64, "Creating Start Menu shortcuts...");
-            create_start_menu_shortcuts(&config.install_dir, &websir_exe, &uninstall_exe, &ico_path)?;
+            create_start_menu_shortcuts(&config.install_dir, &weysko_exe, &uninstall_exe, &ico_path)?;
         }
 
         if config.create_desktop_shortcut {
             progress_cb(0.74, "Creating Desktop shortcut...");
-            create_desktop_shortcut(&config.install_dir, &websir_exe, &ico_path)?;
+            create_desktop_shortcut(&config.install_dir, &weysko_exe, &ico_path)?;
         }
 
         if config.register_uninstaller {
@@ -92,25 +92,25 @@ pub fn run_install(
         }
 
         if config.add_to_path {
-            progress_cb(0.90, "Adding Websir CLI to User PATH...");
+            progress_cb(0.90, "Adding Weysko CLI to User PATH...");
             add_to_user_path(&config.install_dir)?;
         }
 
         if config.associate_files {
-            progress_cb(0.95, "Associating .websir.json project files...");
-            register_file_association(&websir_exe, &ico_path)?;
+            progress_cb(0.95, "Associating .weysko.json project files...");
+            register_file_association(&weysko_exe, &ico_path)?;
         }
     }
 
     #[cfg(not(windows))]
     {
-        let _ = (&websir_exe, &ico_path);
+        let _ = (&weysko_exe, &ico_path);
     }
 
     progress_cb(1.0, "Installation complete.");
     Ok(InstallSummary {
         install_dir: config.install_dir.clone(),
-        exe_path: websir_exe,
+        exe_path: weysko_exe,
         installed_bytes,
     })
 }
@@ -152,7 +152,7 @@ pub fn run_uninstall(install_dir: &Path, progress_cb: impl Fn(f32, &str)) -> Res
         progress_cb(0.50, "Removing Windows registry entries...");
         remove_registry_entries();
 
-        progress_cb(0.70, "Removing Websir from User PATH...");
+        progress_cb(0.70, "Removing Weysko from User PATH...");
         let _ = remove_from_user_path(install_dir);
     }
 
@@ -162,7 +162,7 @@ pub fn run_uninstall(install_dir: &Path, progress_cb: impl Fn(f32, &str)) -> Res
     }
 
     progress_cb(0.90, "Deleting installed files...");
-    for fname in ["websir.exe", "README.md", "LICENSE", "websir.ico"] {
+    for fname in ["weysko.exe", "README.md", "LICENSE", "weysko.ico"] {
         let p = install_dir.join(fname);
         if p.exists() {
             let _ = fs::remove_file(&p);
@@ -172,7 +172,7 @@ pub fn run_uninstall(install_dir: &Path, progress_cb: impl Fn(f32, &str)) -> Res
     #[cfg(windows)]
     schedule_self_delete(install_dir);
 
-    progress_cb(1.0, "Websir has been uninstalled.");
+    progress_cb(1.0, "Weysko has been uninstalled.");
     Ok(())
 }
 
@@ -222,7 +222,7 @@ fn start_menu_dir() -> Option<PathBuf> {
             .join("Windows")
             .join("Start Menu")
             .join("Programs")
-            .join("Websir")
+            .join("Weysko")
     })
 }
 
@@ -230,7 +230,7 @@ fn start_menu_dir() -> Option<PathBuf> {
 fn desktop_lnk_path() -> Option<PathBuf> {
     env::var("USERPROFILE")
         .ok()
-        .map(|home| PathBuf::from(home).join("Desktop").join("Websir.lnk"))
+        .map(|home| PathBuf::from(home).join("Desktop").join("Weysko.lnk"))
 }
 
 #[cfg(windows)]
@@ -286,26 +286,26 @@ fn create_shortcut(
 #[cfg(windows)]
 fn create_start_menu_shortcuts(
     install_dir: &Path,
-    websir_exe: &Path,
+    weysko_exe: &Path,
     uninstall_exe: &Path,
     ico_path: &Path,
 ) -> Result<(), String> {
     if let Some(dir) = start_menu_dir() {
         create_shortcut(
-            &dir.join("Websir.lnk"),
-            websir_exe,
+            &dir.join("Weysko.lnk"),
+            weysko_exe,
             "",
             install_dir,
             ico_path,
-            "Websir — Pure-Rust Visual Website Studio",
+            "Weysko — Pure-Rust Visual Website Studio",
         )?;
         create_shortcut(
-            &dir.join("Uninstall Websir.lnk"),
+            &dir.join("Uninstall Weysko.lnk"),
             uninstall_exe,
             "--uninstall",
             install_dir,
             ico_path,
-            "Uninstall Websir Visual Website Studio",
+            "Uninstall Weysko Visual Website Studio",
         )?;
     }
     Ok(())
@@ -314,17 +314,17 @@ fn create_start_menu_shortcuts(
 #[cfg(windows)]
 fn create_desktop_shortcut(
     install_dir: &Path,
-    websir_exe: &Path,
+    weysko_exe: &Path,
     ico_path: &Path,
 ) -> Result<(), String> {
     if let Some(lnk) = desktop_lnk_path() {
         create_shortcut(
             &lnk,
-            websir_exe,
+            weysko_exe,
             "",
             install_dir,
             ico_path,
-            "Websir — Pure-Rust Visual Website Studio",
+            "Weysko — Pure-Rust Visual Website Studio",
         )?;
     }
     Ok(())
@@ -352,17 +352,17 @@ fn register_uninstall_entry(
 
     let hkcu = RegKey::predef(HKEY_CURRENT_USER);
     let (key, _) = hkcu
-        .create_subkey(r"Software\Microsoft\Windows\CurrentVersion\Uninstall\Websir")
+        .create_subkey(r"Software\Microsoft\Windows\CurrentVersion\Uninstall\Weysko")
         .map_err(|e| format!("Registry error: {}", e))?;
 
     let size_kb = ((installed_bytes / 1024).max(1)) as u32;
     let uninstall_cmd = format!("\"{}\" --uninstall", uninstall_exe.display());
 
-    key.set_value("DisplayName", &"Websir Visual Website Studio")
+    key.set_value("DisplayName", &"Weysko Visual Website Studio")
         .map_err(|e| e.to_string())?;
-    key.set_value("DisplayVersion", &"1.1.0")
+    key.set_value("DisplayVersion", &"1.2.0")
         .map_err(|e| e.to_string())?;
-    key.set_value("Publisher", &"Websir Project")
+    key.set_value("Publisher", &"Weysko Project")
         .map_err(|e| e.to_string())?;
     key.set_value("DisplayIcon", &ico_path.to_string_lossy().as_ref())
         .map_err(|e| e.to_string())?;
@@ -370,7 +370,7 @@ fn register_uninstall_entry(
         .map_err(|e| e.to_string())?;
     key.set_value("UninstallString", &uninstall_cmd)
         .map_err(|e| e.to_string())?;
-    key.set_value("URLInfoAbout", &"https://realaaravdas.github.io/Websir/")
+    key.set_value("URLInfoAbout", &"https://realaaravdas.github.io/Weysko/")
         .map_err(|e| e.to_string())?;
     key.set_value("NoModify", &1u32).map_err(|e| e.to_string())?;
     key.set_value("NoRepair", &1u32).map_err(|e| e.to_string())?;
@@ -380,23 +380,23 @@ fn register_uninstall_entry(
 }
 
 #[cfg(windows)]
-fn register_file_association(websir_exe: &Path, ico_path: &Path) -> Result<(), String> {
+fn register_file_association(weysko_exe: &Path, ico_path: &Path) -> Result<(), String> {
     use winreg::enums::*;
     use winreg::RegKey;
 
     let hkcu = RegKey::predef(HKEY_CURRENT_USER);
     let (ext_key, _) = hkcu
-        .create_subkey(r"Software\Classes\.websir.json")
+        .create_subkey(r"Software\Classes\.weysko.json")
         .map_err(|e| e.to_string())?;
     ext_key
-        .set_value("", &"Websir.Project")
+        .set_value("", &"Weysko.Project")
         .map_err(|e| e.to_string())?;
 
     let (prog_key, _) = hkcu
-        .create_subkey(r"Software\Classes\Websir.Project")
+        .create_subkey(r"Software\Classes\Weysko.Project")
         .map_err(|e| e.to_string())?;
     prog_key
-        .set_value("", &"Websir Website Project")
+        .set_value("", &"Weysko Website Project")
         .map_err(|e| e.to_string())?;
 
     let (icon_key, _) = prog_key
@@ -410,7 +410,7 @@ fn register_file_association(websir_exe: &Path, ico_path: &Path) -> Result<(), S
         .create_subkey(r"shell\open\command")
         .map_err(|e| e.to_string())?;
     cmd_key
-        .set_value("", &format!("\"{}\" \"%1\"", websir_exe.display()))
+        .set_value("", &format!("\"{}\" \"%1\"", weysko_exe.display()))
         .map_err(|e| e.to_string())?;
     Ok(())
 }
@@ -474,9 +474,9 @@ fn remove_registry_entries() {
     use winreg::RegKey;
 
     let hkcu = RegKey::predef(HKEY_CURRENT_USER);
-    let _ = hkcu.delete_subkey_all(r"Software\Microsoft\Windows\CurrentVersion\Uninstall\Websir");
-    let _ = hkcu.delete_subkey_all(r"Software\Classes\.websir.json");
-    let _ = hkcu.delete_subkey_all(r"Software\Classes\Websir.Project");
+    let _ = hkcu.delete_subkey_all(r"Software\Microsoft\Windows\CurrentVersion\Uninstall\Weysko");
+    let _ = hkcu.delete_subkey_all(r"Software\Classes\.weysko.json");
+    let _ = hkcu.delete_subkey_all(r"Software\Classes\Weysko.Project");
 }
 
 #[cfg(windows)]
@@ -533,23 +533,23 @@ mod tests {
 
     #[test]
     fn path_helpers_add_dedup_and_remove_cleanly() {
-        let (p1, ch1) = add_dir_to_path_str(r"C:\Windows\System32;C:\Tools\", r"C:\Apps\Websir");
+        let (p1, ch1) = add_dir_to_path_str(r"C:\Windows\System32;C:\Tools\", r"C:\Apps\Weysko");
         assert!(ch1);
-        assert_eq!(p1, r"C:\Windows\System32;C:\Tools\;C:\Apps\Websir");
+        assert_eq!(p1, r"C:\Windows\System32;C:\Tools\;C:\Apps\Weysko");
 
         // Case-insensitive & trailing-slash deduplication
-        let (p2, ch2) = add_dir_to_path_str(&p1, r"c:\apps\websir\");
+        let (p2, ch2) = add_dir_to_path_str(&p1, r"c:\apps\weysko\");
         assert!(!ch2);
         assert_eq!(p2, p1);
 
-        let (p3, ch3) = remove_dir_from_path_str(&p1, r"C:\Apps\Websir\");
+        let (p3, ch3) = remove_dir_from_path_str(&p1, r"C:\Apps\Weysko\");
         assert!(ch3);
         assert_eq!(p3, r"C:\Windows\System32;C:\Tools\");
     }
 
     #[test]
-    fn default_install_dir_ends_with_websir() {
+    fn default_install_dir_ends_with_weysko() {
         let dir = default_install_dir();
-        assert_eq!(dir.file_name().and_then(|n| n.to_str()), Some("Websir"));
+        assert_eq!(dir.file_name().and_then(|n| n.to_str()), Some("Weysko"));
     }
 }

@@ -1,12 +1,12 @@
 <p align="left">
-  <img src="assets/logo-dark.svg" alt="Websir Logo" height="44" />
+  <img src="assets/logo-dark.svg" alt="Weysko Logo" height="44" />
 </p>
 
-# Websir
+# Weysko
 
-**Official Website:** [https://realaaravdas.github.io/Websir/](https://realaaravdas.github.io/Websir/) · **Releases:** [GitHub Releases](https://github.com/realaaravdas/Websir/releases)
+**Official Website:** [https://realaaravdas.github.io/Weysko/](https://realaaravdas.github.io/Weysko/) · **Releases:** [GitHub Releases](https://github.com/realaaravdas/Weysko/releases)
 
-**Websir** is a 100% pure-Rust, zero-AI visual website studio and static site compiler inspired by classic Wix Studio, built with a modern, minimalist **dark-and-white slate** workspace.
+**Weysko** is a 100% pure-Rust, zero-AI visual website studio and static site compiler inspired by classic Wix Studio, built with a modern, minimalist **dark-and-white slate** workspace.
 
 Design complete multi-page websites visually using drag-and-drop positioning, pre-built section strips, global design tokens, and responsive breakpoint previews — then compile deterministically into clean HTML5, CSS3, and vanilla JavaScript ready to launch on any web server, static host, or Google Sites.
 
@@ -28,28 +28,28 @@ Design complete multi-page websites visually using drag-and-drop positioning, pr
 - **6 Curated Theme Presets + Deep Customization**:
   - `Obsidian Slate`, `Pure Editorial`, `Midnight Mono`, `Nordic Steel`, `Warm Alabaster`, and `Carbon Ink`.
   - Customize global color tokens, Google Fonts / system typography, border radius, max content width, hover effects, entrance animations, box shadows, and custom global or per-element CSS.
-- **Embedded Media Library**: Import PNG, JPG, WebP, GIF, or SVG images directly into your `.websir.json` project — exported cleanly to `assets/` or inline `data:` URIs.
+- **Embedded Media Library**: Import PNG, JPG, WebP, GIF, or SVG images directly into your `.weysko.json` project — exported cleanly to `assets/` or inline `data:` URIs.
 - **Built-In Live Preview Server**: One-click pure-Rust HTTP server (`tiny_http`) serving your compiled site with instant updates.
 
 ---
 
-## Installing & Running Websir
+## Installing & Running Weysko
 
 ### Windows Installer (Recommended)
-Download **`websir-v1.1.0-windows-x86_64-setup.exe`** from [GitHub Releases](https://github.com/realaaravdas/Websir/releases/latest) to install Websir with Start Menu & Desktop shortcuts, `.websir.json` file association, User `PATH` CLI registration, and a Windows Apps & Features uninstaller.
+Download **`weysko-v1.2.0-windows-x86_64-setup.exe`** from [GitHub Releases](https://github.com/realaaravdas/Weysko/releases/latest) to install Weysko with Start Menu & Desktop shortcuts, `.weysko.json` file association, User `PATH` CLI registration, and a Windows Apps & Features uninstaller.
 
 ### Build from Source
 ```bash
 # Launch the visual studio GUI
 cargo run --release
 
-# Or build both Websir Studio and the Windows Setup Installer
+# Or build both Weysko Studio and the Windows Setup Installer
 ./scripts/build-installer.ps1
 ```
 
 Or open an existing project file directly:
 ```bash
-cargo run --release -- path/to/site.websir.json
+cargo run --release -- path/to/site.weysko.json
 ```
 
 ---
@@ -70,16 +70,16 @@ Click **Export / Publish** in the top-right corner of the studio to choose from 
 
 ## Headless CLI Mode
 
-Websir also ships with a scriptable CLI for CI/CD pipelines and rapid exports:
+Weysko also ships with a scriptable CLI for CI/CD pipelines and rapid exports:
 
 ```bash
 # Create a new project JSON from a starter template
-cargo run -- --init-template saas --out my-site.websir.json
+cargo run -- --init-template saas --out my-site.weysko.json
 
 # Export a project or template to a static folder, ZIP, or single-file HTML
 cargo run -- --export template:saas --out ./dist --format folder
-cargo run -- --export my-site.websir.json --out ./dist/site.zip --format zip
-cargo run -- --export my-site.websir.json --out ./dist/embed.html --format google-sites
+cargo run -- --export my-site.weysko.json --out ./dist/site.zip --format zip
+cargo run -- --export my-site.weysko.json --out ./dist/embed.html --format google-sites
 
 # Serve a compiled site over localhost
 cargo run -- --serve template:portfolio --port 8080
@@ -95,7 +95,7 @@ Available template keys: `portfolio`, `saas`, `agency`, `bio`, `blank`.
 |---|---|
 | `Ctrl + Z` | Undo |
 | `Ctrl + Y` / `Ctrl + Shift + Z` | Redo |
-| `Ctrl + S` | Save project (`.websir.json`) |
+| `Ctrl + S` | Save project (`.weysko.json`) |
 | `Ctrl + Shift + S` | Save As |
 | `Ctrl + D` | Duplicate selected element |
 | `Ctrl + C` / `Ctrl + V` | Copy / Paste element |

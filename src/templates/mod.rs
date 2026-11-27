@@ -107,7 +107,7 @@ fn build_portfolio() -> SiteProject {
 
     let mut home = Page::new("Home — Slate Portfolio", "index");
     home.meta_description =
-        "Minimalist slate architectural portfolio built with Websir.".into();
+        "Minimalist slate architectural portfolio built with Weysko.".into();
     home.sections = vec![
         SectionPreset::NavbarStrip.build(&tokens),
         SectionPreset::HeroSplit.build(&tokens),

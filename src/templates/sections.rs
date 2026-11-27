@@ -645,8 +645,8 @@ fn build_faq_accordion(tokens: &DesignTokens) -> Section {
             answer: "Choose Export → Google Sites, click Copy Embed HTML, then inside Google Sites open Insert → Embed → Embed code and paste.".into(),
         },
         AccordionItem {
-            question: "Does Websir use AI or external cloud servers?".into(),
-            answer: "Never. Websir is 100% deterministic Rust running locally on your machine with full manual design control.".into(),
+            question: "Does Weysko use AI or external cloud servers?".into(),
+            answer: "Never. Weysko is 100% deterministic Rust running locally on your machine with full manual design control.".into(),
         },
     ];
     acc.rect = Rect2D::new(160.0, 120.0, 880.0, 240.0);

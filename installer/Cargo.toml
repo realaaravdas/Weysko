@@ -1,12 +1,12 @@
 [package]
-name = "websir-installer"
-version = "1.1.0"
+name = "weysko-installer"
+version = "1.2.0"
 edition = "2021"
 license = "MIT"
-description = "Native pure-Rust Windows Setup Wizard and Uninstaller for Websir"
+description = "Native pure-Rust Windows Setup Wizard and Uninstaller for Weysko"
 
 [[bin]]
-name = "websir-setup"
+name = "weysko-setup"
 path = "src/main.rs"
 
 [dependencies]

@@ -17,7 +17,7 @@ pub fn draw_inspector(ctx: &egui::Context, state: &mut StudioState) {
     if !state.show_inspector {
         return;
     }
-    egui::SidePanel::right("websir_inspector")
+    egui::SidePanel::right("weysko_inspector")
         .default_width(284.0)
         .width_range(236.0..=380.0)
         .resizable(true)

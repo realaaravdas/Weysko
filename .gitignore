@@ -2,4 +2,4 @@
 **/*.rs.bk
 *.zip
 /dist
-*.websir.tmp.json
+*.weysko.tmp.json

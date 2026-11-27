@@ -393,7 +393,7 @@ fn draw_shortcuts_modal(ctx: &egui::Context, state: &mut StudioState) {
                 ("Ctrl+Z / Ctrl+Y", "Undo / Redo"),
                 ("Ctrl+C / Ctrl+V / Ctrl+D", "Copy / Paste / Duplicate element"),
                 ("Delete / Backspace", "Delete selected element"),
-                ("Ctrl+S / Ctrl+Shift+S", "Save / Save As (.websir.json)"),
+                ("Ctrl+S / Ctrl+Shift+S", "Save / Save As (.weysko.json)"),
                 ("Ctrl+= / Ctrl+- / Ctrl+0", "Zoom in / out / reset 85%"),
                 ("F1", "Toggle this shortcuts reference"),
             ] {
@@ -419,7 +419,7 @@ fn draw_toast(ctx: &egui::Context, state: &mut StudioState) {
         return;
     }
 
-    egui::Area::new(egui::Id::new("websir_toast_area"))
+    egui::Area::new(egui::Id::new("weysko_toast_area"))
         .anchor(Align2::RIGHT_BOTTOM, egui::vec2(-20.0, -20.0))
         .show(ctx, |ui| {
             let stroke_col = if toast.is_error { DANGER_INK } else { SUCCESS_INK };

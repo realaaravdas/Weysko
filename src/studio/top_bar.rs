@@ -13,7 +13,7 @@ use super::style::{
 };
 
 pub fn draw_top_bar(ctx: &egui::Context, state: &mut StudioState) {
-    egui::TopBottomPanel::top("websir_top_bar")
+    egui::TopBottomPanel::top("weysko_top_bar")
         .exact_height(52.0)
         .frame(
             Frame::new()
@@ -39,7 +39,7 @@ pub fn draw_top_bar(ctx: &egui::Context, state: &mut StudioState) {
                     Color32::from_rgb(0, 188, 235),
                 );
                 if !compact {
-                    ui.label(RichText::new("WEBSIR").color(WHITE).strong().size(13.0));
+                    ui.label(RichText::new("WEYSKO").color(WHITE).strong().size(13.0));
                 }
 
                 let file_lbl = if state.dirty { "File*" } else { "File" };
@@ -272,12 +272,12 @@ pub fn save_project_dialog(state: &mut StudioState, force_save_as: bool) {
 
     let path = target_path.or_else(|| {
         let default_name = format!(
-            "{}.websir.json",
+            "{}.weysko.json",
             crate::model::project::sanitize_slug(&state.project.name)
         );
         rfd::FileDialog::new()
             .set_file_name(&default_name)
-            .add_filter("Websir Project", &["json", "websir.json"])
+            .add_filter("Weysko Project", &["json", "weysko.json"])
             .save_file()
     });
 
@@ -298,7 +298,7 @@ pub fn save_project_dialog(state: &mut StudioState, force_save_as: bool) {
 
 pub fn open_project_dialog(state: &mut StudioState) {
     if let Some(path) = rfd::FileDialog::new()
-        .add_filter("Websir Project", &["json"])
+        .add_filter("Weysko Project", &["json"])
         .pick_file()
     {
         match fs::read_to_string(&path) {

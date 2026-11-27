@@ -7,14 +7,14 @@ use std::process;
 use std::thread;
 use std::time::Duration;
 
-use websir::generator::exporter::{
+use weysko::generator::exporter::{
     export_to_folder, export_to_single_file, export_to_zip,
 };
-use websir::generator::{compile_site, ExportOptions};
-use websir::model::SiteProject;
-use websir::preview::PreviewServer;
-use websir::studio::WebsirApp;
-use websir::templates::StarterTemplate;
+use weysko::generator::{compile_site, ExportOptions};
+use weysko::model::SiteProject;
+use weysko::preview::PreviewServer;
+use weysko::studio::WeyskoApp;
+use weysko::templates::StarterTemplate;
 
 #[cfg(all(windows, not(debug_assertions)))]
 fn attach_parent_console_if_cli() {
@@ -41,10 +41,10 @@ fn main() {
         return;
     }
 
-    // CLI: --init-template <key> --out <file.websir.json>
+    // CLI: --init-template <key> --out <file.weysko.json>
     if let Some(idx) = args.iter().position(|a| a == "--init-template") {
         let key = args.get(idx + 1).map(String::as_str).unwrap_or("portfolio");
-        let out_path = find_flag(&args, "--out").unwrap_or_else(|| "site.websir.json".into());
+        let out_path = find_flag(&args, "--out").unwrap_or_else(|| "site.weysko.json".into());
         let tmpl = StarterTemplate::from_cli_key(key).unwrap_or_else(|| {
             eprintln!("Unknown template '{}'. Valid: portfolio, saas, agency, bio, blank", key);
             process::exit(1);
@@ -60,7 +60,7 @@ fn main() {
     if let Some(src) = find_flag(&args, "--export") {
         let project = load_project_source(&src);
         let out_path = PathBuf::from(
-            find_flag(&args, "--out").unwrap_or_else(|| "./websir-dist".into()),
+            find_flag(&args, "--out").unwrap_or_else(|| "./weysko-dist".into()),
         );
         let fmt = find_flag(&args, "--format").unwrap_or_else(|| "folder".into());
         let opts = ExportOptions::default();
@@ -112,14 +112,14 @@ fn main() {
         let port = find_flag(&args, "--port").and_then(|p| p.parse::<u16>().ok());
         let compiled = compile_site(&project);
         let server = PreviewServer::start(compiled, port).expect("start preview server");
-        println!("Websir live preview serving '{}' at {}", project.name, server.url());
+        println!("Weysko live preview serving '{}' at {}", project.name, server.url());
         println!("Press Ctrl+C to stop.");
         loop {
             thread::sleep(Duration::from_secs(1));
         }
     }
 
-    // Positional path to .websir.json opens GUI with that project
+    // Positional path to .weysko.json opens GUI with that project
     let path = PathBuf::from(&args[0]);
     if path.exists() {
         let project = load_project_source(&args[0]);
@@ -134,18 +134,18 @@ fn main() {
 fn run_gui(project: SiteProject, file_path: Option<PathBuf>) {
     let options = eframe::NativeOptions {
         viewport: eframe::egui::ViewportBuilder::default()
-            .with_title("Websir — Pure-Rust Visual Website Studio")
+            .with_title("Weysko — Pure-Rust Visual Website Studio")
             .with_inner_size([1280.0, 780.0])
             .with_min_inner_size([840.0, 540.0])
-            .with_icon(websir::studio::branding::app_icon_data()),
+            .with_icon(weysko::studio::branding::app_icon_data()),
         ..Default::default()
     };
 
     let _ = eframe::run_native(
-        "Websir",
+        "Weysko",
         options,
         Box::new(move |_cc| {
-            let mut app = WebsirApp::new(project);
+            let mut app = WeyskoApp::new(project);
             app.state.current_file_path = file_path;
             Ok(Box::new(app))
         }),
@@ -166,7 +166,7 @@ fn load_project_source(src: &str) -> SiteProject {
         process::exit(1);
     });
     SiteProject::from_json(&raw).unwrap_or_else(|e| {
-        eprintln!("Invalid Websir project JSON '{}': {}", src, e);
+        eprintln!("Invalid Weysko project JSON '{}': {}", src, e);
         process::exit(1);
     })
 }
@@ -180,17 +180,17 @@ fn find_flag(args: &[String], flag: &str) -> Option<String> {
 
 fn print_help() {
     println!(
-        r#"Websir — Pure-Rust, Zero-AI Visual Website Studio
+        r#"Weysko — Pure-Rust, Zero-AI Visual Website Studio
 
 USAGE:
-  websir                                      Launch visual studio GUI
-  websir <project.websir.json>                Open project in studio GUI
-  websir --init-template <key> --out <file>   Create a starter project JSON
-  websir --export <src> --out <path> [--format <folder|zip|single-file|google-sites>]
-  websir --serve <src> [--port <8080>]        Serve compiled site over localhost
+  weysko                                      Launch visual studio GUI
+  weysko <project.weysko.json>                Open project in studio GUI
+  weysko --init-template <key> --out <file>   Create a starter project JSON
+  weysko --export <src> --out <path> [--format <folder|zip|single-file|google-sites>]
+  weysko --serve <src> [--port <8080>]        Serve compiled site over localhost
 
 SOURCES (<src>):
-  <file.websir.json> or template:<portfolio|saas|agency|bio|blank>
+  <file.weysko.json> or template:<portfolio|saas|agency|bio|blank>
 "#
     );
 }

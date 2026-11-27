@@ -12,11 +12,11 @@ fn main() {
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
     let profile = env::var("PROFILE").unwrap_or_else(|_| "debug".to_string());
 
-    let ico_path = repo_root.join("assets").join("websir.ico");
+    let ico_path = repo_root.join("assets").join("weysko.ico");
     let readme_path = repo_root.join("README.md");
     let license_path = repo_root.join("LICENSE");
-    let release_exe = repo_root.join("target").join("release").join("websir.exe");
-    let debug_exe = repo_root.join("target").join("debug").join("websir.exe");
+    let release_exe = repo_root.join("target").join("release").join("weysko.exe");
+    let debug_exe = repo_root.join("target").join("debug").join("weysko.exe");
 
     println!("cargo:rerun-if-changed={}", ico_path.display());
     println!("cargo:rerun-if-changed={}", readme_path.display());
@@ -27,23 +27,23 @@ fn main() {
     if ico_path.exists() {
         let mut res = winresource::WindowsResource::new();
         res.set_icon(ico_path.to_str().unwrap());
-        res.set("ProductName", "Websir Visual Website Studio Setup");
-        res.set("FileDescription", "Websir v1.1.0 Installer");
+        res.set("ProductName", "Weysko Visual Website Studio Setup");
+        res.set("FileDescription", "Weysko v1.2.0 Installer");
         res.set("LegalCopyright", "Copyright (c) 2026 Aarav Das");
-        res.set("OriginalFilename", "websir-setup.exe");
+        res.set("OriginalFilename", "weysko-setup.exe");
         res.compile().expect("failed to compile installer resources");
     }
 
-    let payload_zip = out_dir.join("websir-payload.zip");
-    let file = File::create(&payload_zip).expect("create websir-payload.zip");
+    let payload_zip = out_dir.join("weysko-payload.zip");
+    let file = File::create(&payload_zip).expect("create weysko-payload.zip");
     let mut writer = ZipWriter::new(file);
     let opts = SimpleFileOptions::default().compression_method(CompressionMethod::Deflated);
 
     let exe_bytes = if release_exe.exists() {
-        fs::read(&release_exe).expect("read target/release/websir.exe")
+        fs::read(&release_exe).expect("read target/release/weysko.exe")
     } else if profile == "release" {
         panic!(
-            "target/release/websir.exe not found! Build the main app first: cargo build --release -p websir"
+            "target/release/weysko.exe not found! Build the main app first: cargo build --release -p weysko"
         );
     } else if debug_exe.exists() {
         fs::read(&debug_exe).unwrap_or_default()
@@ -51,7 +51,7 @@ fn main() {
         Vec::new()
     };
 
-    writer.start_file("websir.exe", opts).unwrap();
+    writer.start_file("weysko.exe", opts).unwrap();
     writer.write_all(&exe_bytes).unwrap();
 
     if readme_path.exists() {
@@ -63,7 +63,7 @@ fn main() {
         writer.write_all(&fs::read(&license_path).unwrap()).unwrap();
     }
     if ico_path.exists() {
-        writer.start_file("websir.ico", opts).unwrap();
+        writer.start_file("weysko.ico", opts).unwrap();
         writer.write_all(&fs::read(&ico_path).unwrap()).unwrap();
     }
 

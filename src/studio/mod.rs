@@ -14,13 +14,13 @@ use crate::templates::StarterTemplate;
 use self::state::StudioState;
 use self::style::apply_slate_theme;
 
-/// Native `eframe` application hosting the Websir Studio workspace.
-pub struct WebsirApp {
+/// Native `eframe` application hosting the Weysko Studio workspace.
+pub struct WeyskoApp {
     pub state: StudioState,
     theme_initialized: bool,
 }
 
-impl WebsirApp {
+impl WeyskoApp {
     pub fn new(initial_project: crate::model::SiteProject) -> Self {
         Self {
             state: StudioState::new(initial_project),
@@ -167,7 +167,7 @@ impl WebsirApp {
     }
 }
 
-impl eframe::App for WebsirApp {
+impl eframe::App for WeyskoApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         if !self.theme_initialized {
             apply_slate_theme(ctx);

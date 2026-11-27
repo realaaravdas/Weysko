@@ -7,7 +7,7 @@ use std::collections::BTreeMap;
 
 use crate::model::SiteProject;
 
-/// Target export format supported by Websir.
+/// Target export format supported by Weysko.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ExportFormat {
     StaticFolder,

@@ -1,6 +1,6 @@
 use egui::{Color32, CornerRadius, IconData, Painter, Pos2, Rect, Vec2};
 
-/// Renders the Websir 7-bar geometric emblem on a rounded slate square at any square resolution.
+/// Renders the Weysko 7-bar geometric emblem on a rounded slate square at any square resolution.
 pub fn render_logo_rgba(size: u32) -> Vec<u8> {
     let mut rgba = vec![0u8; (size * size * 4) as usize];
     let s = size as f32;
@@ -33,7 +33,7 @@ pub fn render_logo_rgba(size: u32) -> Vec<u8> {
         }
     }
 
-    // 7 precision architectural bars forming the Websir W emblem
+    // 7 precision architectural bars forming the Weysko W emblem
     let bars: [(f32, f32, f32, f32, [u8; 4]); 7] = [
         (11.5, 17.0, 4.5, 24.0, white),
         (18.0, 24.0, 4.5, 23.0, cyan),
@@ -70,7 +70,7 @@ pub fn app_icon_data() -> IconData {
     }
 }
 
-/// Paints the 7-bar geometric Websir mark crisply into any `egui` rect.
+/// Paints the 7-bar geometric Weysko mark crisply into any `egui` rect.
 pub fn paint_logo_mark(painter: &Painter, rect: Rect, primary: Color32, accent: Color32) {
     let w = rect.width();
     let h = rect.height();

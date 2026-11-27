@@ -99,8 +99,8 @@
     canvas: {
       title: 'Freeform WYSIWYG Canvas with 8px Snap & Smart Guides',
       desc: 'Drag elements, resize via 8-point handles, edit typography inline, and inspect live X/Y coordinates.',
-      ctaText: 'Download Installer v1.1.0',
-      ctaHref: 'https://github.com/realaaravdas/Websir/releases/download/v1.1.0/websir-v1.1.0-windows-x86_64-setup.exe',
+      ctaText: 'Download Installer v1.2.0',
+      ctaHref: 'https://github.com/realaaravdas/Weysko/releases/download/v1.2.0/weysko-v1.2.0-windows-x86_64-setup.exe',
       mode: 'studio',
       badge: 'Canvas /index.html',
       headline: 'Critical infrastructure for modern web publishing.',
@@ -140,7 +140,7 @@
       ctaHref: '#deployment',
       mode: 'code',
       code:
-        'websir-dist/\n' +
+        'weysko-dist/\n' +
         '├── index.html       (semantic HTML5)\n' +
         '├── pricing.html     (multi-page routing)\n' +
         '├── 404.html         (branded fallback)\n' +
@@ -156,8 +156,8 @@
       ctaHref: '#architecture',
       mode: 'code',
       code:
-        '$ websir --serve template:saas --port 8080\n' +
-        'Websir live preview serving \'Kestrel SaaS\' at http://127.0.0.1:8080\n\n' +
+        '$ weysko --serve template:saas --port 8080\n' +
+        'Weysko live preview serving \'Kestrel SaaS\' at http://127.0.0.1:8080\n\n' +
         'GET /index.html    200 OK  text/html; charset=utf-8\n' +
         'GET /styles.css    200 OK  text/css; charset=utf-8\n' +
         'GET /site.js       200 OK  application/javascript\n'
@@ -170,10 +170,10 @@
       mode: 'code',
       code:
         '# Generate starter project JSON\n' +
-        'websir --init-template agency --out studio.websir.json\n\n' +
+        'weysko --init-template agency --out studio.weysko.json\n\n' +
         '# Compile to ZIP or Google Sites single-file HTML\n' +
-        'websir --export studio.websir.json --out dist/site.zip --format zip\n' +
-        'websir --export studio.websir.json --out dist/embed.html --format google-sites\n'
+        'weysko --export studio.weysko.json --out dist/site.zip --format zip\n' +
+        'weysko --export studio.weysko.json --out dist/embed.html --format google-sites\n'
     }
   };
 
@@ -190,7 +190,7 @@
       frameHost.innerHTML =
         '<div class="studio-mock">' +
         '  <div class="studio-mock-top">' +
-        '    <div class="studio-mock-brand"><span>WEBSIR STUDIO</span><span class="studio-mock-pill">' + d.badge + '</span></div>' +
+        '    <div class="studio-mock-brand"><span>WEYSKO STUDIO</span><span class="studio-mock-pill">' + d.badge + '</span></div>' +
         '    <div class="studio-mock-pills">' +
         '      <span class="studio-mock-pill">Desktop 1280</span>' +
         '      <span class="studio-mock-pill">Grid</span>' +
@@ -230,7 +230,7 @@
       frameHost.innerHTML =
         '<div class="studio-mock">' +
         '  <div class="studio-mock-top">' +
-        '    <div class="studio-mock-brand"><span>WEBSIR COMPILER OUTPUT</span></div>' +
+        '    <div class="studio-mock-brand"><span>WEYSKO COMPILER OUTPUT</span></div>' +
         '    <div class="studio-mock-pills"><span class="studio-mock-pill is-white">Deterministic Build</span></div>' +
         '  </div>' +
         '  <pre class="mock-code-panel" style="margin:0;"><code>' + escapeHtml(d.code) + '</code></pre>' +

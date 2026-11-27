@@ -2,18 +2,18 @@ use std::fs;
 use std::io::{Read, Write};
 use std::net::TcpStream;
 
-use websir::generator::exporter::{
+use weysko::generator::exporter::{
     export_to_folder, export_to_single_file, export_to_zip, generate_google_sites_embed,
 };
-use websir::generator::{compile_site, ExportOptions};
-use websir::model::{Element, ElementKind, PresetTheme};
-use websir::preview::PreviewServer;
-use websir::templates::StarterTemplate;
+use weysko::generator::{compile_site, ExportOptions};
+use weysko::model::{Element, ElementKind, PresetTheme};
+use weysko::preview::PreviewServer;
+use weysko::templates::StarterTemplate;
 
 #[test]
 fn all_starter_templates_export_and_serve_cleanly() {
     let tmp_root =
-        std::env::temp_dir().join(format!("websir_all_templates_{}", uuid::Uuid::new_v4()));
+        std::env::temp_dir().join(format!("weysko_all_templates_{}", uuid::Uuid::new_v4()));
 
     for tmpl in StarterTemplate::all() {
         let mut project = tmpl.build();

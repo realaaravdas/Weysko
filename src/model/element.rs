@@ -18,7 +18,7 @@ impl Rect2D {
     }
 }
 
-/// Supported visual and structural element kinds on the Websir canvas.
+/// Supported visual and structural element kinds on the Weysko canvas.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub enum ElementKind {
     Heading,
@@ -470,7 +470,7 @@ impl Default for ElementContent {
             image_url: String::new(),
             alt_text: "Image".into(),
             object_fit: ObjectFit::Cover,
-            nav_brand: "WEBSIR".into(),
+            nav_brand: "WEYSKO".into(),
             nav_auto_pages: true,
             nav_links: vec![
                 NavLink {
@@ -491,7 +491,7 @@ impl Default for ElementContent {
             ],
             nav_cta_label: "Get Started".into(),
             nav_cta_href: "#contact".into(),
-            footer_copyright: "© 2026 Studio. Built with Websir.".into(),
+            footer_copyright: "© 2026 Studio. Built with Weysko.".into(),
             footer_columns: vec![
                 FooterColumn {
                     heading: "Navigation".into(),

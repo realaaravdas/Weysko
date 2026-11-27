@@ -172,7 +172,7 @@ mod tests {
             sec.elements.push(img);
         }
 
-        let tmp = std::env::temp_dir().join(format!("websir_test_{}", uuid::Uuid::new_v4()));
+        let tmp = std::env::temp_dir().join(format!("weysko_test_{}", uuid::Uuid::new_v4()));
         let folder_out = tmp.join("site_folder");
         let zip_out = tmp.join("site.zip");
         let single_out = tmp.join("single.html");
