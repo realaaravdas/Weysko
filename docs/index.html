@@ -27,17 +27,25 @@
         <a class="brand-lockup" href="#top" aria-label="Weysko Home">
           <img src="assets/logo.svg" alt="Weysko">
         </a>
-        <nav class="main-nav" aria-label="Primary Navigation">
+        <nav class="main-nav" id="main-nav" aria-label="Primary Navigation">
           <a href="#studio">Studio</a>
           <a href="#architecture">Architecture</a>
           <a href="#capabilities">Capabilities</a>
           <a href="#deployment">Deployment</a>
           <a href="https://github.com/realaaravdas/Weysko" target="_blank" rel="noopener noreferrer">Source</a>
+          <a class="mobile-nav-cta" href="https://github.com/realaaravdas/Weysko/releases/download/v1.2.0/weysko-v1.2.0-windows-x86_64-setup.exe">Download Installer v1.2.0</a>
         </nav>
       </div>
       <div class="header-right">
         <a class="btn-outline-enterprise" href="https://github.com/realaaravdas/Weysko/releases/download/v1.2.0/weysko-v1.2.0-windows-x86_64-setup.exe">Download v1.2.0</a>
-        <button class="mobile-menu-btn" id="mobile-menu-btn" type="button" aria-label="Toggle navigation" aria-expanded="false">=</button>
+        <button class="mobile-menu-btn" id="mobile-menu-btn" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="main-nav">
+          <svg class="icon-menu" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M3 5.5H17M3 10H17M3 14.5H17" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+          </svg>
+          <svg class="icon-close" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M4.5 4.5L15.5 15.5M15.5 4.5L4.5 15.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+          </svg>
+        </button>
       </div>
     </div>
   </header>
@@ -376,7 +384,7 @@ weysko --serve site.weysko.json --port 8080</code></pre>
     <div class="ws-container">
       <h2>Build visually. Own every byte.</h2>
       <p>Download the Weysko v1.2.0 Windows installer or build directly from source with Cargo.</p>
-      <div class="hero-actions" style="justify-content:center;">
+      <div class="hero-actions hero-actions--center">
         <a class="pill-btn-white" href="https://github.com/realaaravdas/Weysko/releases/download/v1.2.0/weysko-v1.2.0-windows-x86_64-setup.exe">Download Installer v1.2.0</a>
         <a class="pill-btn-ghost" href="https://github.com/realaaravdas/Weysko/releases/latest" target="_blank" rel="noopener noreferrer">Portable ZIP &amp; Checksums</a>
       </div>

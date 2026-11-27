@@ -3,68 +3,109 @@
   var header = document.getElementById('site-header');
   var menuBtn = document.getElementById('mobile-menu-btn');
   if (header && menuBtn) {
+    function closeMenu() {
+      header.classList.remove('is-open');
+      menuBtn.setAttribute('aria-expanded', 'false');
+    }
+
     menuBtn.addEventListener('click', function () {
       var open = header.classList.toggle('is-open');
       menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
     });
     header.querySelectorAll('.main-nav a').forEach(function (link) {
-      link.addEventListener('click', function () {
-        header.classList.remove('is-open');
-        menuBtn.setAttribute('aria-expanded', 'false');
-      });
+      link.addEventListener('click', closeMenu);
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && header.classList.contains('is-open')) {
+        closeMenu();
+        menuBtn.focus();
+      }
+    });
+    document.addEventListener('click', function (e) {
+      if (header.classList.contains('is-open') && !header.contains(e.target)) {
+        closeMenu();
+      }
+    });
+    window.addEventListener('resize', function () {
+      if (window.innerWidth > 960 && header.classList.contains('is-open')) {
+        closeMenu();
+      }
     });
   }
 
   // Subtle ambient vector filaments in hero lower-right (with pause/play toggle)
   var canvas = document.getElementById('hero-canvas');
   var pauseBtn = document.getElementById('hero-pause-btn');
+  var heroSection = document.querySelector('.hero-section');
   var animRunning = true;
   var phase = 0;
 
   if (canvas && canvas.getContext) {
     var ctx = canvas.getContext('2d');
+    var canvasW = 0;
+    var canvasH = 0;
 
     function resizeCanvas() {
       var dpr = Math.min(window.devicePixelRatio || 1, 2);
       var rect = canvas.getBoundingClientRect();
-      canvas.width = Math.max(1, Math.floor(rect.width * dpr));
-      canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+      canvasW = rect.width;
+      canvasH = rect.height;
+      canvas.width = Math.max(1, Math.floor(canvasW * dpr));
+      canvas.height = Math.max(1, Math.floor(canvasH * dpr));
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
+    if (typeof ResizeObserver !== 'undefined' && heroSection) {
+      var heroObserver = new ResizeObserver(resizeCanvas);
+      heroObserver.observe(heroSection);
+    }
 
     function drawFrame() {
-      var rect = canvas.getBoundingClientRect();
-      var w = rect.width;
-      var h = rect.height;
+      var w = canvasW;
+      var h = canvasH;
+      if (w <= 0 || h <= 0) {
+        requestAnimationFrame(drawFrame);
+        return;
+      }
       ctx.clearRect(0, 0, w, h);
 
+      var isCompact = w < 640;
+
       // Restrained cobalt/cyan lower-right ambient radial wash
-      var grad = ctx.createRadialGradient(w * 0.78, h * 0.85, 20, w * 0.72, h * 0.78, w * 0.52);
-      grad.addColorStop(0, 'rgba(0, 188, 235, 0.16)');
-      grad.addColorStop(0.45, 'rgba(0, 96, 255, 0.10)');
+      var grad = ctx.createRadialGradient(
+        w * (isCompact ? 0.84 : 0.78),
+        h * 0.85,
+        20,
+        w * (isCompact ? 0.8 : 0.72),
+        h * 0.78,
+        w * 0.52
+      );
+      grad.addColorStop(0, isCompact ? 'rgba(0, 188, 235, 0.12)' : 'rgba(0, 188, 235, 0.16)');
+      grad.addColorStop(0.45, isCompact ? 'rgba(0, 96, 255, 0.08)' : 'rgba(0, 96, 255, 0.10)');
       grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, w, h);
 
       // Fine architectural wave ribbons anchored on lower-right so left text stays crisp
       var strands = 22;
+      var startX = w * (isCompact ? 0.45 : 0.34);
+      var baseY = isCompact ? 0.96 : 0.94;
+      var opacityScale = isCompact ? 0.65 : 1;
       for (var i = 0; i < strands; i++) {
         var frac = i / (strands - 1);
         ctx.beginPath();
-        var startX = w * 0.34;
         for (var x = startX; x <= w + 20; x += 14) {
           var nx = (x - startX) / (w - startX);
           var wave =
             Math.sin(nx * 4.2 + phase + frac * 1.9) * (36 * nx) +
             Math.cos(nx * 2.4 - phase * 0.7 + frac * 1.4) * (24 * nx);
-          var y = h * (0.94 - nx * 0.42) + (frac - 0.5) * 90 + wave;
+          var y = h * (baseY - nx * 0.42) + (frac - 0.5) * 90 + wave;
           if (x === startX) ctx.moveTo(x, y);
           else ctx.lineTo(x, y);
         }
-        var alpha = 0.04 + (1 - Math.abs(frac - 0.5) * 2) * 0.18;
+        var alpha = (0.04 + (1 - Math.abs(frac - 0.5) * 2) * 0.18) * opacityScale;
         ctx.strokeStyle =
           i % 4 === 0
             ? 'rgba(0, 188, 235, ' + alpha.toFixed(3) + ')'
@@ -192,8 +233,8 @@
         '  <div class="studio-mock-top">' +
         '    <div class="studio-mock-brand"><span>WEYSKO STUDIO</span><span class="studio-mock-pill">' + d.badge + '</span></div>' +
         '    <div class="studio-mock-pills">' +
-        '      <span class="studio-mock-pill">Desktop 1280</span>' +
-        '      <span class="studio-mock-pill">Grid</span>' +
+        '      <span class="studio-mock-pill is-secondary">Desktop 1280</span>' +
+        '      <span class="studio-mock-pill is-secondary">Grid</span>' +
         '      <span class="studio-mock-pill is-white">Export / Publish</span>' +
         '    </div>' +
         '  </div>' +
@@ -211,7 +252,7 @@
         '          <span class="mock-selected-tag">H1 • 680 × 84</span>' +
         '          <span class="mock-handle nw"></span><span class="mock-handle ne"></span>' +
         '          <span class="mock-handle sw"></span><span class="mock-handle se"></span>' +
-        '          <div style="font-size:20px;font-weight:600;color:#fff;line-height:1.2;">' + d.headline + '</div>' +
+        '          <div class="mock-artboard-heading">' + d.headline + '</div>' +
         '        </div>' +
         '        <div style="font-size:13px;color:#94a3b8;margin-bottom:16px;">' + d.sub + '</div>' +
         '        <span style="display:inline-block;padding:8px 16px;background:#fff;color:#0f172a;border-radius:6px;font-size:12px;font-weight:600;">Explore Work</span>' +
