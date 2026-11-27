@@ -33,7 +33,7 @@
     });
   }
 
-  // Subtle ambient vector filaments in hero lower-right (with pause/play toggle)
+  // Full-bleed edge-to-edge ambient vector filaments in hero (with pause/play toggle)
   var canvas = document.getElementById('hero-canvas');
   var pauseBtn = document.getElementById('hero-pause-btn');
   var heroSection = document.querySelector('.hero-section');
@@ -44,6 +44,88 @@
     var ctx = canvas.getContext('2d');
     var canvasW = 0;
     var canvasH = 0;
+    var rafPending = false;
+
+    function renderHeroCanvas() {
+      var w = canvasW;
+      var h = canvasH;
+      if (w <= 0 || h <= 0) {
+        return;
+      }
+      ctx.clearRect(0, 0, w, h);
+
+      var isCompact = w < 640;
+
+      // Centered full-bleed cobalt/cyan ambient radial wash
+      var glowRadius = Math.max(w * 0.55, h * 0.72);
+      var grad = ctx.createRadialGradient(
+        w * 0.5,
+        h * 0.54,
+        12,
+        w * 0.5,
+        h * 0.54,
+        glowRadius
+      );
+      grad.addColorStop(0, isCompact ? 'rgba(0, 188, 235, 0.11)' : 'rgba(0, 188, 235, 0.14)');
+      grad.addColorStop(0.38, isCompact ? 'rgba(0, 96, 255, 0.08)' : 'rgba(0, 96, 255, 0.11)');
+      grad.addColorStop(0.68, 'rgba(7, 24, 45, 0.06)');
+      grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+
+      // Full-width architectural wave filaments fading seamlessly on both horizontal edges
+      var strands = 26;
+      var step = Math.max(10, Math.round(w / 96));
+      var spread = Math.min(h * 0.36, 170);
+      var amp1 = Math.min(h * 0.09, 44);
+      var amp2 = Math.min(h * 0.06, 28);
+      var sweep = Math.min(h * 0.16, 72);
+      var opacityScale = isCompact ? 0.65 : 1;
+
+      for (var i = 0; i < strands; i++) {
+        var frac = i / (strands - 1);
+        ctx.beginPath();
+        for (var x = -24; x <= w + 24; x += step) {
+          var nx = x / w;
+          var wave =
+            Math.sin(nx * 4.4 + phase + frac * 1.9) * amp1 +
+            Math.cos(nx * 2.5 - phase * 0.7 + frac * 1.4) * amp2;
+          var y = h * 0.58 + (0.5 - nx) * sweep + (frac - 0.5) * spread + wave;
+          if (x === -24) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        var alpha = (0.045 + (1 - Math.abs(frac - 0.5) * 2) * 0.18) * opacityScale;
+        var strokeGrad = ctx.createLinearGradient(0, 0, w, 0);
+        if (i % 4 === 0) {
+          strokeGrad.addColorStop(0, 'rgba(0, 188, 235, 0)');
+          strokeGrad.addColorStop(0.18, 'rgba(0, 188, 235, ' + alpha.toFixed(3) + ')');
+          strokeGrad.addColorStop(0.82, 'rgba(0, 188, 235, ' + alpha.toFixed(3) + ')');
+          strokeGrad.addColorStop(1, 'rgba(0, 188, 235, 0)');
+        } else {
+          var mutedAlpha = (alpha * 0.85).toFixed(3);
+          strokeGrad.addColorStop(0, 'rgba(226, 232, 240, 0)');
+          strokeGrad.addColorStop(0.18, 'rgba(226, 232, 240, ' + mutedAlpha + ')');
+          strokeGrad.addColorStop(0.82, 'rgba(226, 232, 240, ' + mutedAlpha + ')');
+          strokeGrad.addColorStop(1, 'rgba(226, 232, 240, 0)');
+        }
+        ctx.strokeStyle = strokeGrad;
+        ctx.lineWidth = i % 5 === 0 ? 1.35 : 0.85;
+        ctx.stroke();
+      }
+
+      // Seamless top and bottom black edge fades
+      var topFade = ctx.createLinearGradient(0, 0, 0, h * 0.18);
+      topFade.addColorStop(0, '#000000');
+      topFade.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = topFade;
+      ctx.fillRect(0, 0, w, h * 0.18);
+
+      var botFade = ctx.createLinearGradient(0, h * 0.72, 0, h);
+      botFade.addColorStop(0, 'rgba(0, 0, 0, 0)');
+      botFade.addColorStop(1, '#000000');
+      ctx.fillStyle = botFade;
+      ctx.fillRect(0, h * 0.72, w, h * 0.28);
+    }
 
     function resizeCanvas() {
       var dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -53,6 +135,7 @@
       canvas.width = Math.max(1, Math.floor(canvasW * dpr));
       canvas.height = Math.max(1, Math.floor(canvasH * dpr));
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      renderHeroCanvas();
     }
 
     resizeCanvas();
@@ -63,63 +146,16 @@
     }
 
     function drawFrame() {
-      var w = canvasW;
-      var h = canvasH;
-      if (w <= 0 || h <= 0) {
-        requestAnimationFrame(drawFrame);
-        return;
-      }
-      ctx.clearRect(0, 0, w, h);
-
-      var isCompact = w < 640;
-
-      // Restrained cobalt/cyan lower-right ambient radial wash
-      var grad = ctx.createRadialGradient(
-        w * (isCompact ? 0.84 : 0.78),
-        h * 0.85,
-        20,
-        w * (isCompact ? 0.8 : 0.72),
-        h * 0.78,
-        w * 0.52
-      );
-      grad.addColorStop(0, isCompact ? 'rgba(0, 188, 235, 0.12)' : 'rgba(0, 188, 235, 0.16)');
-      grad.addColorStop(0.45, isCompact ? 'rgba(0, 96, 255, 0.08)' : 'rgba(0, 96, 255, 0.10)');
-      grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, w, h);
-
-      // Fine architectural wave ribbons anchored on lower-right so left text stays crisp
-      var strands = 22;
-      var startX = w * (isCompact ? 0.45 : 0.34);
-      var baseY = isCompact ? 0.96 : 0.94;
-      var opacityScale = isCompact ? 0.65 : 1;
-      for (var i = 0; i < strands; i++) {
-        var frac = i / (strands - 1);
-        ctx.beginPath();
-        for (var x = startX; x <= w + 20; x += 14) {
-          var nx = (x - startX) / (w - startX);
-          var wave =
-            Math.sin(nx * 4.2 + phase + frac * 1.9) * (36 * nx) +
-            Math.cos(nx * 2.4 - phase * 0.7 + frac * 1.4) * (24 * nx);
-          var y = h * (baseY - nx * 0.42) + (frac - 0.5) * 90 + wave;
-          if (x === startX) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-        var alpha = (0.04 + (1 - Math.abs(frac - 0.5) * 2) * 0.18) * opacityScale;
-        ctx.strokeStyle =
-          i % 4 === 0
-            ? 'rgba(0, 188, 235, ' + alpha.toFixed(3) + ')'
-            : 'rgba(226, 232, 240, ' + (alpha * 0.85).toFixed(3) + ')';
-        ctx.lineWidth = i % 5 === 0 ? 1.35 : 0.85;
-        ctx.stroke();
-      }
-
+      rafPending = false;
+      renderHeroCanvas();
       if (animRunning) {
         phase += 0.008;
+        rafPending = true;
+        requestAnimationFrame(drawFrame);
       }
-      requestAnimationFrame(drawFrame);
     }
 
+    rafPending = true;
     requestAnimationFrame(drawFrame);
   }
 
@@ -132,6 +168,10 @@
         'aria-label',
         animRunning ? 'Pause background motion' : 'Play background motion'
       );
+      if (animRunning && typeof drawFrame === 'function' && !rafPending) {
+        rafPending = true;
+        requestAnimationFrame(drawFrame);
+      }
     });
   }
 
