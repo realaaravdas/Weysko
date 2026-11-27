@@ -140,8 +140,8 @@
     canvas: {
       title: 'Freeform WYSIWYG Canvas with 8px Snap & Smart Guides',
       desc: 'Drag elements, resize via 8-point handles, edit typography inline, and inspect live X/Y coordinates.',
-      ctaText: 'Download Installer v1.2.0',
-      ctaHref: 'https://github.com/realaaravdas/Weysko/releases/download/v1.2.0/weysko-v1.2.0-windows-x86_64-setup.exe',
+      ctaText: 'Download Installer v1.3.0',
+      ctaHref: 'https://github.com/realaaravdas/Weysko/releases/download/v1.3.0/weysko-v1.3.0-windows-x86_64-setup.exe',
       mode: 'studio',
       badge: 'Canvas /index.html',
       headline: 'Critical infrastructure for modern web publishing.',
@@ -204,17 +204,17 @@
         'GET /site.js       200 OK  application/javascript\n'
     },
     cli: {
-      title: 'Scriptable Headless CLI for CI/CD Pipelines',
-      desc: 'Initialize templates, compile sites, and package deployment bundles directly from your terminal.',
-      ctaText: 'Open CLI Reference',
-      ctaHref: '#deployment',
+      title: 'Scriptable Headless CLI & Portable .weysko Bundles',
+      desc: 'Initialize .weysko templates, compile static folders, ZIP archives, or Google Sites embeds directly from your terminal.',
+      ctaText: 'Open CLI Guide',
+      ctaHref: 'guide.html#cli-reference',
       mode: 'code',
       code:
-        '# Generate starter project JSON\n' +
-        'weysko --init-template agency --out studio.weysko.json\n\n' +
-        '# Compile to ZIP or Google Sites single-file HTML\n' +
-        'weysko --export studio.weysko.json --out dist/site.zip --format zip\n' +
-        'weysko --export studio.weysko.json --out dist/embed.html --format google-sites\n'
+        '# Generate starter .weysko project file\n' +
+        'weysko --init-template meridian --out meridian.weysko\n\n' +
+        '# Export to Folder, ZIP, Google Sites, or portable .weysko\n' +
+        'weysko --export meridian.weysko --out dist/site.zip --format zip\n' +
+        'weysko --export meridian.weysko --out dist/copy.weysko --format weysko\n'
     }
   };
 

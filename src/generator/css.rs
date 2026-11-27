@@ -131,12 +131,16 @@ button, input, textarea { font-family: inherit; }
 .ws-heading {
   margin: 0;
   font-family: var(--ws-font-heading);
-  word-break: break-word;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  overflow-wrap: break-word;
 }
 .ws-paragraph {
   margin: 0;
   white-space: pre-wrap;
-  word-break: break-word;
+  overflow-wrap: break-word;
 }
 .ws-btn {
   display: inline-flex;
@@ -568,6 +572,12 @@ button, input, textarea { font-family: inherit; }
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
+  }
+  h1.ws-heading {
+    font-size: clamp(24px, 8vw, 36px);
+  }
+  h2.ws-heading {
+    font-size: clamp(20px, 6.5vw, 28px);
   }
 }
 "#,

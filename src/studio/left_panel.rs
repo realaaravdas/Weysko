@@ -54,6 +54,18 @@ pub fn draw_left_panel(ctx: &egui::Context, state: &mut StudioState) {
                         .response
                         .interact(egui::Sense::click());
 
+                    if active {
+                        let accent_bar = egui::Rect::from_min_size(
+                            egui::pos2(resp.rect.min.x - 4.0, resp.rect.min.y + 4.0),
+                            egui::vec2(2.5, (resp.rect.height() - 8.0).max(8.0)),
+                        );
+                        ui.painter().rect_filled(
+                            accent_bar,
+                            CornerRadius::same(2),
+                            Color32::from_rgb(0, 188, 235),
+                        );
+                    }
+
                     if resp.clicked() {
                         if active {
                             state.active_drawer = None;

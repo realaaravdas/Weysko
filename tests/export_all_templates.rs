@@ -3,10 +3,11 @@ use std::io::{Read, Write};
 use std::net::TcpStream;
 
 use weysko::generator::exporter::{
-    export_to_folder, export_to_single_file, export_to_zip, generate_google_sites_embed,
+    export_to_folder, export_to_single_file, export_to_weysko_file, export_to_zip,
+    generate_google_sites_embed,
 };
 use weysko::generator::{compile_site, ExportOptions};
-use weysko::model::{Element, ElementKind, PresetTheme};
+use weysko::model::{Element, ElementKind, PresetTheme, SiteProject};
 use weysko::preview::PreviewServer;
 use weysko::templates::StarterTemplate;
 
@@ -35,6 +36,7 @@ fn all_starter_templates_export_and_serve_cleanly() {
         let folder = tmp_root.join(format!("{}_folder", key));
         let zip_path = tmp_root.join(format!("{}.zip", key));
         let single_path = tmp_root.join(format!("{}.html", key));
+        let weysko_path = tmp_root.join(format!("{}.weysko", key));
 
         let f_sum = export_to_folder(&project, &folder, &opts).unwrap();
         assert!(f_sum.file_count >= 5);
@@ -49,10 +51,22 @@ fn all_starter_templates_export_and_serve_cleanly() {
         assert!(s_sum.total_bytes > 0);
         assert!(single_path.exists());
 
+        let w_sum = export_to_weysko_file(&project, &weysko_path).unwrap();
+        assert_eq!(w_sum.file_count, 1);
+        let raw = fs::read_to_string(&weysko_path).unwrap();
+        let roundtrip = SiteProject::from_weysko_or_json(&raw).unwrap();
+        assert_eq!(roundtrip.name, project.name);
+        assert_eq!(roundtrip.pages.len(), project.pages.len());
+
         let embed = generate_google_sites_embed(&project);
         assert!(embed.contains("<style>"));
         assert!(embed.contains("<script>"));
     }
+
+    // Verify Meridian Cloud example includes embedded PNG asset and 3 pages
+    let meridian = StarterTemplate::MeridianDemo.build();
+    assert_eq!(meridian.pages.len(), 3);
+    assert!(!meridian.assets.is_empty());
 
     // Verify all 16 element kinds compile cleanly on a custom page and serve over HTTP.
     let mut custom = StarterTemplate::BlankCanvas.build();

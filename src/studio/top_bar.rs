@@ -3,13 +3,14 @@ use std::fs;
 use egui::{Color32, CornerRadius, Frame, Margin, RichText, Stroke, Ui};
 
 use crate::generator::{compile_site, exporter::generate_google_sites_embed};
-use crate::model::{SiteProject, ViewportMode};
+use crate::model::ViewportMode;
 use crate::preview::PreviewServer;
 
-use super::state::StudioState;
+use super::state::{AppScreen, ExportModalTab, StudioState};
 use super::style::{
     ghost_button, primary_white_button, secondary_slate_button, BG_INPUT, BG_PANEL, BG_SURFACE,
-    BORDER_STRONG, BORDER_SUBTLE, SLATE_INK, TEXT_DIM, TEXT_MUTED, TEXT_PRIMARY, WHITE,
+    BORDER_STRONG, BORDER_SUBTLE, SLATE_INK, SUCCESS_INK, TEXT_DIM, TEXT_MUTED, TEXT_PRIMARY,
+    WHITE,
 };
 
 pub fn draw_top_bar(ctx: &egui::Context, state: &mut StudioState) {
@@ -24,31 +25,52 @@ pub fn draw_top_bar(ctx: &egui::Context, state: &mut StudioState) {
         .show(ctx, |ui| {
             ui.spacing_mut().item_spacing.x = 5.0;
             let avail_w = ui.available_width();
-            let compact = avail_w < 1120.0;
-            let show_pages_btn = avail_w >= 1220.0;
-            let show_proj_name = avail_w >= 960.0;
+            let compact = avail_w < 1160.0;
+            let show_pages_btn = avail_w >= 1240.0;
+            let show_proj_name = avail_w >= 980.0;
 
             ui.horizontal_centered(|ui| {
-                // Vector Brand Mark + Wordmark
-                let (mark_rect, _) =
-                    ui.allocate_exact_size(egui::vec2(24.0, 20.0), egui::Sense::hover());
+                // Clickable Vector Brand Mark + Home button returning to Start Screen
+                let (mark_rect, mark_resp) =
+                    ui.allocate_exact_size(egui::vec2(24.0, 20.0), egui::Sense::click());
                 super::branding::paint_logo_mark(
                     ui.painter(),
                     mark_rect,
                     WHITE,
                     Color32::from_rgb(0, 188, 235),
                 );
+                if mark_resp.hovered() {
+                    ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
+                }
+                if mark_resp
+                    .on_hover_text("Return to Start Screen (Home)")
+                    .clicked()
+                {
+                    state.screen = AppScreen::Home;
+                }
+
                 if !compact {
                     ui.label(RichText::new("WEYSKO").color(WHITE).strong().size(13.0));
                 }
 
+                if ghost_button(ui, "Home", false)
+                    .on_hover_text("Open Start / Home screen (templates, styles & recents)")
+                    .clicked()
+                {
+                    state.screen = AppScreen::Home;
+                }
+
                 let file_lbl = if state.dirty { "File*" } else { "File" };
                 ui.menu_button(RichText::new(file_lbl).color(TEXT_MUTED).size(12.0), |ui| {
+                    if ui.button("Home / Start Screen...").clicked() {
+                        state.screen = AppScreen::Home;
+                        ui.close_menu();
+                    }
                     if ui.button("New Blank Site").clicked() {
                         state.apply_template(crate::templates::StarterTemplate::BlankCanvas);
                         ui.close_menu();
                     }
-                    if ui.button("Open Project...").clicked() {
+                    if ui.button("Open Project (.weysko / .json)...").clicked() {
                         open_project_dialog(state);
                         ui.close_menu();
                     }
@@ -59,6 +81,11 @@ pub fn draw_top_bar(ctx: &egui::Context, state: &mut StudioState) {
                     }
                     if ui.button("Save As... (Ctrl+Shift+S)").clicked() {
                         save_project_dialog(state, true);
+                        ui.close_menu();
+                    }
+                    if ui.button("Export .weysko File...").clicked() {
+                        state.export_tab = ExportModalTab::WeyskoFile;
+                        state.show_export_modal = true;
                         ui.close_menu();
                     }
                     ui.separator();
@@ -80,7 +107,7 @@ pub fn draw_top_bar(ctx: &egui::Context, state: &mut StudioState) {
                 if show_proj_name {
                     let name_resp = ui.add(
                         egui::TextEdit::singleline(&mut state.project.name)
-                            .desired_width(108.0)
+                            .desired_width(104.0)
                             .font(egui::FontId::proportional(12.0)),
                     );
                     if name_resp.changed() {
@@ -97,7 +124,7 @@ pub fn draw_top_bar(ctx: &egui::Context, state: &mut StudioState) {
 
                 egui::ComboBox::from_id_salt("top_page_selector")
                     .selected_text(RichText::new(current_page_title).size(11.5))
-                    .width(122.0)
+                    .width(118.0)
                     .show_ui(ui, |ui| {
                         let pages: Vec<(String, String, String)> = state
                             .project
@@ -174,7 +201,10 @@ pub fn draw_top_bar(ctx: &egui::Context, state: &mut StudioState) {
                         });
                     });
 
-                if ghost_button(ui, "-", false).on_hover_text("Zoom out (Ctrl+-)").clicked() {
+                if ghost_button(ui, "-", false)
+                    .on_hover_text("Zoom out (Ctrl+-)")
+                    .clicked()
+                {
                     state.auto_fit_zoom = false;
                     state.zoom = (state.zoom - 0.1).max(0.35);
                 }
@@ -183,7 +213,10 @@ pub fn draw_top_bar(ctx: &egui::Context, state: &mut StudioState) {
                         .size(11.0)
                         .color(TEXT_MUTED),
                 );
-                if ghost_button(ui, "+", false).on_hover_text("Zoom in (Ctrl+=)").clicked() {
+                if ghost_button(ui, "+", false)
+                    .on_hover_text("Zoom in (Ctrl+=)")
+                    .clicked()
+                {
                     state.auto_fit_zoom = false;
                     state.zoom = (state.zoom + 0.1).min(1.5);
                 }
@@ -263,6 +296,92 @@ pub fn draw_top_bar(ctx: &egui::Context, state: &mut StudioState) {
         });
 }
 
+/// Compact bottom status bar surfacing live coordinates, theme, and file status.
+pub fn draw_status_bar(ctx: &egui::Context, state: &StudioState) {
+    egui::TopBottomPanel::bottom("weysko_status_bar")
+        .exact_height(26.0)
+        .frame(
+            Frame::new()
+                .fill(Color32::from_rgb(11, 17, 32))
+                .stroke(Stroke::new(1.0_f32, BORDER_SUBTLE))
+                .inner_margin(Margin::symmetric(14, 4)),
+        )
+        .show(ctx, |ui| {
+            ui.horizontal_centered(|ui| {
+                if let Some(page) = state.project.find_page(&state.selected_page_id) {
+                    let elem_count: usize = page.sections.iter().map(|s| s.elements.len()).sum();
+                    ui.label(
+                        RichText::new(format!(
+                            "/{}  •  {} strips  •  {} elements",
+                            page.html_filename(),
+                            page.sections.len(),
+                            elem_count
+                        ))
+                        .color(TEXT_MUTED)
+                        .size(11.0),
+                    );
+
+                    if let Some(el_id) = &state.selected_element_id {
+                        if let Some((_, el)) = page.find_element(el_id) {
+                            separator_v_small(ui);
+                            ui.label(
+                                RichText::new(format!(
+                                    "{}  [{:.0}, {:.0}  •  {:.0}×{:.0}px]",
+                                    el.name, el.rect.x, el.rect.y, el.rect.w, el.rect.h
+                                ))
+                                .color(WHITE)
+                                .size(11.0),
+                            );
+                        }
+                    } else {
+                        separator_v_small(ui);
+                        ui.label(
+                            RichText::new("Double-click text to edit inline • Right-click for actions")
+                                .color(TEXT_DIM)
+                                .size(11.0),
+                        );
+                    }
+                }
+
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    let file_label = state
+                        .current_file_path
+                        .as_ref()
+                        .and_then(|p| p.file_name())
+                        .and_then(|n| n.to_str())
+                        .unwrap_or("Unsaved draft");
+                    let dirty_mark = if state.dirty { " *" } else { "" };
+                    ui.label(
+                        RichText::new(format!("{}{}", file_label, dirty_mark))
+                            .color(TEXT_MUTED)
+                            .size(11.0),
+                    );
+
+                    separator_v_small(ui);
+
+                    ui.label(
+                        RichText::new(format!(
+                            "{}  •  {:.0}px",
+                            state.project.theme.preset.label(),
+                            state.viewport.width_px()
+                        ))
+                        .color(TEXT_DIM)
+                        .size(11.0),
+                    );
+
+                    if let Some(srv) = &state.preview_server {
+                        separator_v_small(ui);
+                        ui.label(
+                            RichText::new(format!("● Live {}", srv.url()))
+                                .color(SUCCESS_INK)
+                                .size(11.0),
+                        );
+                    }
+                });
+            });
+        });
+}
+
 pub fn save_project_dialog(state: &mut StudioState, force_save_as: bool) {
     let target_path = if !force_save_as {
         state.current_file_path.clone()
@@ -272,21 +391,34 @@ pub fn save_project_dialog(state: &mut StudioState, force_save_as: bool) {
 
     let path = target_path.or_else(|| {
         let default_name = format!(
-            "{}.weysko.json",
+            "{}.weysko",
             crate::model::project::sanitize_slug(&state.project.name)
         );
         rfd::FileDialog::new()
             .set_file_name(&default_name)
-            .add_filter("Weysko Project", &["json", "weysko.json"])
+            .add_filter("Weysko Project", &["weysko", "json"])
             .save_file()
     });
 
     if let Some(p) = path {
-        match state.project.to_json_pretty() {
-            Ok(json) => match fs::write(&p, json) {
+        let is_legacy_json = p
+            .extension()
+            .and_then(|e| e.to_str())
+            .map(|e| e.eq_ignore_ascii_case("json"))
+            .unwrap_or(false);
+        let serialized = if is_legacy_json {
+            state.project.to_json_pretty()
+        } else {
+            state.project.to_weysko_pretty()
+        };
+
+        match serialized {
+            Ok(raw) => match fs::write(&p, raw) {
                 Ok(_) => {
                     state.current_file_path = Some(p.clone());
                     state.dirty = false;
+                    state.recent_projects.record(&state.project, &p);
+                    state.recent_projects.save();
                     state.notify(format!("Saved {}", p.display()), false);
                 }
                 Err(e) => state.notify(format!("Save failed: {}", e), true),
@@ -298,31 +430,11 @@ pub fn save_project_dialog(state: &mut StudioState, force_save_as: bool) {
 
 pub fn open_project_dialog(state: &mut StudioState) {
     if let Some(path) = rfd::FileDialog::new()
-        .add_filter("Weysko Project", &["json"])
+        .add_filter("Weysko Project", &["weysko", "json"])
         .pick_file()
     {
-        match fs::read_to_string(&path) {
-            Ok(raw) => match SiteProject::from_json(&raw) {
-                Ok(proj) => {
-                    state.project = proj;
-                    state.history.clear();
-                    state.textures.clear();
-                    state.current_file_path = Some(path.clone());
-                    state.dirty = false;
-                    state.preview_dirty = true;
-                    state.selected_element_id = None;
-                    state.selected_page_id = state
-                        .project
-                        .pages
-                        .first()
-                        .map(|p| p.id.clone())
-                        .unwrap_or_default();
-                    state.reconcile_selection();
-                    state.notify(format!("Opened {}", path.display()), false);
-                }
-                Err(e) => state.notify(format!("Invalid project JSON: {}", e), true),
-            },
-            Err(e) => state.notify(format!("Read error: {}", e), true),
+        if let Err(err) = state.open_project_from_path(&path) {
+            state.notify(err, true);
         }
     }
 }
@@ -354,4 +466,9 @@ fn separator_v(ui: &mut Ui) {
     ui.painter().rect_filled(rect, 0.0, BG_SURFACE);
     let _ = TEXT_PRIMARY;
     let _ = TEXT_DIM;
+}
+
+fn separator_v_small(ui: &mut Ui) {
+    let (rect, _) = ui.allocate_exact_size(egui::vec2(1.0, 14.0), egui::Sense::hover());
+    ui.painter().rect_filled(rect, 0.0, BG_SURFACE);
 }

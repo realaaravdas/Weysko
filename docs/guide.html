@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weysko Guide &amp; Meridian Cloud Tutorial</title>
+  <meta name="description" content="Complete instructions for Weysko v1.3.0, building from source on Windows/macOS/Linux, and a hands-on tutorial building Meridian Cloud.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header" id="site-header">
+    <div class="header-utility">
+      <div class="ws-container header-utility-inner">
+        <a href="index.html">Product Overview</a>
+        <a href="demo.html">Web Demo</a>
+        <a href="example-site/index.html">Example Site</a>
+        <a href="https://github.com/realaaravdas/Weysko" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <span>v1.3.0</span>
+      </div>
+    </div>
+    <div class="ws-container header-main-inner">
+      <div class="header-left">
+        <a class="brand-lockup" href="index.html" aria-label="Weysko Home">
+          <img src="assets/logo.svg" alt="Weysko">
+        </a>
+        <nav class="main-nav" id="main-nav" aria-label="Primary Navigation">
+          <a href="index.html">Home</a>
+          <a href="#workflow">Studio Guide</a>
+          <a href="#tutorial">Meridian Tutorial</a>
+          <a href="#cli-reference">CLI Reference</a>
+          <a href="#build-from-source">Build From Source</a>
+          <a class="is-active" href="guide.html">Guide</a>
+          <a href="demo.html">Web Demo</a>
+          <a class="mobile-nav-cta" href="https://github.com/realaaravdas/Weysko/releases/download/v1.3.0/weysko-v1.3.0-windows-x86_64-setup.exe">Download Installer v1.3.0</a>
+        </nav>
+      </div>
+      <div class="header-right">
+        <a class="btn-outline-enterprise" href="demo.html">Launch Web Demo</a>
+        <button class="mobile-menu-btn" id="mobile-menu-btn" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="main-nav">
+          <svg class="icon-menu" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M3 5.5H17M3 10H17M3 14.5H17" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+          </svg>
+          <svg class="icon-close" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M4.5 4.5L15.5 15.5M15.5 4.5L4.5 15.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <section class="subpage-hero">
+    <div class="ws-container">
+      <p class="subpage-eyebrow">Documentation &amp; Walkthrough</p>
+      <h1>Weysko Studio Guide &amp; Meridian Cloud Tutorial</h1>
+      <p>Learn how to navigate the Start screen, design on the slate canvas, export portable <code>.weysko</code> project files, compile from source, and build a complete 3-page website step by step.</p>
+      <div class="hero-actions">
+        <a class="pill-btn-white" href="examples/meridian-cloud.weysko" download>Download meridian-cloud.weysko</a>
+        <a class="pill-btn-ghost" href="demo.html">Open in Web Demo</a>
+        <a class="pill-btn-ghost" href="example-site/index.html">View Live Compiled Site</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="guide-section" id="workflow">
+    <div class="ws-container">
+      <div class="section-header-row">
+        <h2>Using Weysko Studio v1.3.0</h2>
+      </div>
+      <div class="guide-grid">
+        <div class="guide-card">
+          <h3>1. Adobe-Style Start / Home Screen</h3>
+          <p>When you open Weysko with no file argument, the creative Start screen lets you choose how to begin:</p>
+          <ul>
+            <li><strong>Website Style Strip:</strong> Pick any of the 6 curated visual themes (<em>Obsidian Slate</em>, <em>Pure Editorial</em>, <em>Midnight Mono</em>, <em>Nordic Steel</em>, <em>Warm Alabaster</em>, <em>Carbon Ink</em>) before opening a template.</li>
+            <li><strong>Templates &amp; Examples:</strong> Start directly from <em>Meridian Cloud</em>, <em>Minimalist Portfolio</em>, <em>SaaS Landing</em>, <em>Design Agency</em>, or <em>Personal Bio</em>.</li>
+            <li><strong>New from Scratch:</strong> Specify site name, base URL, and initial structure (blank strip, single-page hero, or 3-page skeleton).</li>
+            <li><strong>Past Projects &amp; Import:</strong> Reopen recently saved <code>.weysko</code> / <code>.weysko.json</code> projects or import any file from disk.</li>
+          </ul>
+        </div>
+
+        <div class="guide-card">
+          <h3>2. Designing on the Visual Canvas</h3>
+          <p>Inside the Studio workspace, all layout controls remain direct and deterministic:</p>
+          <ul>
+            <li><strong>Left Rail Drawers:</strong> Switch between <em>Add</em> (16 primitives), <em>Strips</em> (13 section layouts), <em>Sites</em>, <em>Layers</em>, <em>Theme</em>, and <em>Media</em>.</li>
+            <li><strong>Canvas Manipulation:</strong> Drag elements with optional 8px grid snapping and smart alignment guides, resize from all 8 handles, or double-click any heading, paragraph, button, or badge for inline editing.</li>
+            <li><strong>Right Inspector:</strong> Fine-tune Content, Layout (including Desktop/Tablet/Mobile overrides), Style (fills, typography, shadows, padding), and Hover/Entrance effects.</li>
+            <li><strong>Status Bar:</strong> Inspect live coordinates, strip/element counts, theme badge, preview URL, and unsaved status at a glance.</li>
+          </ul>
+        </div>
+
+        <div class="guide-card">
+          <h3>3. Saving &amp; Exporting (.weysko + 4 Targets)</h3>
+          <p>Use <strong>Ctrl+S</strong> to save editable work or open <strong>Export / Publish</strong> for five deployment options:</p>
+          <ul>
+            <li><strong>.weysko Project File:</strong> Portable JSON envelope bundling pages, sections, design tokens, responsive rules, and base64 assets.</li>
+            <li><strong>Static Folder:</strong> Multi-page HTML5, <code>styles.css</code>, <code>site.js</code>, decoded <code>assets/</code>, <code>404.html</code>, and optional <code>sitemap.xml</code> / <code>.nojekyll</code>.</li>
+            <li><strong>ZIP Archive:</strong> Compressed package ready for Netlify Drop or Cloudflare Pages.</li>
+            <li><strong>Single-File &amp; Google Sites:</strong> Self-contained HTML with inline routing; paste directly into Google Sites via <em>Insert &rarr; Embed &rarr; Embed code</em>.</li>
+          </ul>
+        </div>
+
+        <div class="guide-card">
+          <h3>4. Embedded Live Preview Server</h3>
+          <p>Click <strong>Live Preview</strong> in the top bar (or run <code>weysko --serve</code>) to launch an embedded pure-Rust HTTP server (<code>tiny_http</code>) on localhost:</p>
+          <ul>
+            <li>Every canvas edit automatically refreshes the in-memory preview server so refreshing your browser shows the latest HTML/CSS immediately.</li>
+            <li>Press the <strong>Home</strong> button in the top-left whenever you want to return to the Start screen without losing your active editing session.</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3 style="margin:36px 0 14px;font-size:19px;">Keyboard Shortcuts</h3>
+      <div class="table-scroll">
+        <table class="shortcuts-table">
+          <thead>
+            <tr>
+              <th>Shortcut</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><code>Double-Click Text</code></td><td>Edit Heading, Paragraph, Button, or Badge directly on the canvas</td></tr>
+            <tr><td><code>Drag / 8 Handles</code></td><td>Reposition or resize elements with 8px grid snap &amp; smart guides</td></tr>
+            <tr><td><code>Arrow / Shift+Arrow</code></td><td>Nudge selected element 1px / 10px</td></tr>
+            <tr><td><code>Ctrl+Z / Ctrl+Y</code></td><td>Undo / Redo (up to 100 snapshots)</td></tr>
+            <tr><td><code>Ctrl+C / Ctrl+V / Ctrl+D</code></td><td>Copy / Paste / Duplicate selected element</td></tr>
+            <tr><td><code>Ctrl+S / Ctrl+Shift+S</code></td><td>Save / Save As portable <code>.weysko</code> project file</td></tr>
+            <tr><td><code>Ctrl+= / Ctrl+- / Ctrl+0</code></td><td>Zoom in / out / reset auto-fit canvas zoom</td></tr>
+            <tr><td><code>Delete / Backspace</code></td><td>Delete selected element</td></tr>
+            <tr><td><code>F1</code></td><td>Toggle quick shortcuts modal inside the app</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="guide-section guide-section--alt" id="tutorial">
+    <div class="ws-container">
+      <div class="section-header-row">
+        <h2>Step-by-Step Tutorial: Building &ldquo;Meridian Cloud&rdquo;</h2>
+      </div>
+      <p style="margin:-18px 0 28px;color:var(--ink-muted);max-width:740px;">Follow these six steps to recreate, customize, and export the 3-page <strong>Meridian Cloud</strong> infrastructure example shipped with Weysko v1.3.0.</p>
+
+      <div class="tutorial-step-list">
+        <div class="tutorial-step">
+          <span class="step-badge">STEP 01</span>
+          <h3>Choose Obsidian Slate on the Start Screen</h3>
+          <p>Launch Weysko Studio. In the Start screen style bar, select <strong>Obsidian Slate</strong> (<code>#090D16</code> canvas, <code>Inter</code> + <code>JetBrains Mono</code>). Click <strong>Meridian Cloud (Example Site)</strong> or start from a 3-page <em>New from Scratch</em> skeleton to open the editor.</p>
+        </div>
+
+        <div class="tutorial-step">
+          <span class="step-badge">STEP 02</span>
+          <h3>Author the Split Hero &amp; Topology Media</h3>
+          <p>Select the hero strip on <code>/index.html</code>. Double-click the H1 element to edit <em>&ldquo;Deterministic edge compute for distributed teams.&rdquo;</em> Use the <strong>Media</strong> drawer to import <code>meridian-topology.png</code> and click <strong>Use on Selected</strong> with the hero image frame selected.</p>
+        </div>
+
+        <div class="tutorial-step">
+          <span class="step-badge">STEP 03</span>
+          <h3>Configure Feature Cards &amp; Page Links</h3>
+          <p>Insert a <strong>Features 3-Column</strong> strip below the hero, double-click each card&rsquo;s title and body in the Inspector Content tab, and wire the Navbar CTA button (<em>&ldquo;Deploy Now&rdquo;</em>) to page slug <code>contact</code> so both multi-page HTML and Google Sites embeds navigate seamlessly.</p>
+        </div>
+
+        <div class="tutorial-step">
+          <span class="step-badge">STEP 04</span>
+          <h3>Add Pricing Tiers, FAQ &amp; Contact Form</h3>
+          <p>Use the top-bar page switcher to open <code>/pricing.html</code> and <code>/contact.html</code>. Insert the <strong>Pricing Tiers</strong> and <strong>FAQ Accordion</strong> strips on Pricing, then a <strong>Contact Form</strong> strip on Contact using native <code>&lt;details&gt;</code> expand/collapse and toast submission feedback.</p>
+        </div>
+
+        <div class="tutorial-step">
+          <span class="step-badge">STEP 05</span>
+          <h3>Preview Tablet &amp; Mobile Breakpoints</h3>
+          <p>Click <strong>Desktop / Tablet / Mobile</strong> in the top toolbar to verify 1280px, 768px, and 390px reflow. Weysko&rsquo;s <em>Auto Stack</em> mode orders mobile cards top-to-bottom automatically without overlapping elements.</p>
+        </div>
+
+        <div class="tutorial-step">
+          <span class="step-badge">STEP 06</span>
+          <h3>Export .weysko + Live Static Folder</h3>
+          <p>Press <strong>Ctrl+S</strong> to save <code>meridian-cloud.weysko</code> (so it appears in your Start screen&rsquo;s Past Projects), then open <strong>Export / Publish &rarr; Static Folder</strong> to compile the production site. <a class="inline-link" href="example-site/index.html">Inspect the compiled Meridian Cloud output &rsaquo;</a></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="guide-section" id="build-from-source">
+    <div class="ws-container">
+      <div class="section-header-row">
+        <h2>CLI Reference &amp; Build From Source</h2>
+      </div>
+      <div class="reference-grid">
+        <div class="ref-panel" id="cli-reference">
+          <h3>Headless CLI Commands</h3>
+          <p>Automate template creation, multi-target exports, and preview servers in CI or terminal scripts:</p>
+          <div class="code-block">
+            <div class="code-block-head">
+              <span>WEYSKO CLI</span>
+              <button class="copy-code-btn" type="button">Copy</button>
+            </div>
+            <pre class="code-pre"><code># Create portable .weysko project file
+weysko --init-template meridian --out meridian-cloud.weysko
+
+# Export static folder, ZIP, Google Sites embed, or .weysko bundle
+weysko --export meridian-cloud.weysko --out ./dist --format folder
+weysko --export meridian-cloud.weysko --out ./site.zip --format zip
+weysko --export meridian-cloud.weysko --out ./embed.html --format google-sites
+weysko --export meridian-cloud.weysko --out ./backup.weysko --format weysko
+
+# Launch embedded HTTP preview
+weysko --serve meridian-cloud.weysko --port 8080</code></pre>
+          </div>
+        </div>
+
+        <div class="ref-panel">
+          <h3>Compile From Source (Windows, macOS, Linux)</h3>
+          <p>Install the Rust toolchain via <code>rustup.rs</code>, then build the workspace:</p>
+          <div class="code-block">
+            <div class="code-block-head">
+              <span>BUILD STEPS</span>
+              <button class="copy-code-btn" type="button">Copy</button>
+            </div>
+            <pre class="code-pre"><code># 1. Debian / Ubuntu system libraries (Linux only):
+sudo apt-get update && sudo apt-get install -y \
+  libgtk-3-dev libxcb-render0-dev libxcb-shape0-dev \
+  libxcb-xfixes0-dev libxkbcommon-dev libgl1-mesa-dev pkg-config
+
+# 2. Clone & build release binary (all platforms):
+git clone https://github.com/realaaravdas/Weysko.git
+cd Weysko
+cargo build --release --bin weysko
+
+# 3. Run unit & integration checks:
+cargo test --workspace</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="ws-container">
+      <div class="footer-top">
+        <div class="footer-primary-links">
+          <a href="index.html">Overview</a>
+          <a href="demo.html">Web Demo</a>
+          <a href="example-site/index.html">Meridian Cloud Example</a>
+          <a href="https://github.com/realaaravdas/Weysko/releases/latest" target="_blank" rel="noopener noreferrer">v1.3.0 Releases</a>
+          <a href="https://github.com/realaaravdas/Weysko" target="_blank" rel="noopener noreferrer">GitHub</a>
+        </div>
+        <div class="footer-icons">
+          <a href="https://github.com/realaaravdas/Weysko" target="_blank" rel="noopener noreferrer" aria-label="Weysko GitHub Repository">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.57.11.78-.25.78-.55v-1.93c-3.2.7-3.87-1.54-3.87-1.54-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.02 1.76 2.69 1.25 3.35.96.1-.74.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.68 0-1.25.45-2.28 1.19-3.08-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.78 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.8 1.19 1.83 1.19 3.08 0 4.41-2.69 5.39-5.26 5.67.41.36.78 1.06.78 2.14v3.17c0 .3.21.66.79.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="footer-legal-links">
+        <a href="examples/meridian-cloud.weysko" download>Download meridian-cloud.weysko</a>
+        <a href="https://github.com/realaaravdas/Weysko/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>
+      </div>
+      <div class="footer-copy">&copy; 2026 Weysko Project. Pure Rust. Zero AI. MIT License.</div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

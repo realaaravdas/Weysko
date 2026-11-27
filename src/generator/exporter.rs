@@ -111,6 +111,25 @@ pub fn generate_google_sites_embed(project: &SiteProject) -> String {
     compile_site(project).single_file_html
 }
 
+/// Exports the editable site project into a portable `.weysko` project file.
+pub fn export_to_weysko_file(project: &SiteProject, path: &Path) -> io::Result<ExportSummary> {
+    if let Some(parent) = path.parent() {
+        if !parent.as_os_str().is_empty() {
+            fs::create_dir_all(parent)?;
+        }
+    }
+    let payload = project
+        .to_weysko_pretty()
+        .map_err(io::Error::other)?;
+    let bytes = payload.as_bytes();
+    fs::write(path, bytes)?;
+    Ok(ExportSummary {
+        destination: path.to_path_buf(),
+        file_count: 1,
+        total_bytes: bytes.len(),
+    })
+}
+
 fn add_optional_meta_files(
     project: &SiteProject,
     files: &mut std::collections::BTreeMap<String, Vec<u8>>,
@@ -212,6 +231,15 @@ mod tests {
         assert!(embed.contains("data:image/png;base64,"));
         assert!(embed.contains("data-ws-page=\"pricing\""));
         assert!(!embed.contains("href=\"pricing.html\""));
+
+        // Verify portable .weysko project file export & re-import
+        let weysko_out = tmp.join("project.weysko");
+        let w_sum = export_to_weysko_file(&project, &weysko_out).unwrap();
+        assert_eq!(w_sum.file_count, 1);
+        let raw_weysko = fs::read_to_string(&weysko_out).unwrap();
+        let reimported = SiteProject::from_weysko_or_json(&raw_weysko).unwrap();
+        assert_eq!(reimported.name, project.name);
+        assert_eq!(reimported.pages.len(), project.pages.len());
 
         let _ = fs::remove_dir_all(&tmp);
     }

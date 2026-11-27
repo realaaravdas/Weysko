@@ -1,14 +1,30 @@
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::fs;
+use std::path::{Path, PathBuf};
 use std::time::Instant;
 
 use egui::TextureHandle;
 
 use crate::generator::{compile_site, ExportOptions};
 use crate::history::HistoryStack;
-use crate::model::{Element, ElementKind, Rect2D, SiteProject, ViewportMode};
+use crate::model::{Element, ElementKind, Page, PresetTheme, Rect2D, SiteProject, ViewportMode};
 use crate::preview::PreviewServer;
 use crate::templates::{SectionPreset, StarterTemplate};
+
+use super::recent::RecentProjectsStore;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AppScreen {
+    Home,
+    Editor,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum HomeSectionTab {
+    Home,
+    Templates,
+    NewFromScratch,
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DrawerTab {
@@ -69,6 +85,7 @@ pub enum ExportModalTab {
     Zip,
     SingleFile,
     GoogleSites,
+    WeyskoFile,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -128,8 +145,17 @@ pub struct NewPageDraft {
     pub slug: String,
 }
 
-/// Complete Studio state driving top bar, panels, inspector, canvas, and modals.
+/// Complete Studio state driving Home launcher, top bar, panels, inspector, canvas, and modals.
 pub struct StudioState {
+    pub screen: AppScreen,
+    pub has_active_session: bool,
+    pub home_tab: HomeSectionTab,
+    pub home_selected_theme: PresetTheme,
+    pub home_search: String,
+    pub scratch_site_name: String,
+    pub scratch_base_url: String,
+    pub scratch_pages_mode: usize,
+    pub recent_projects: RecentProjectsStore,
     pub project: SiteProject,
     pub history: HistoryStack<SiteProject>,
     pub selected_page_id: String,
@@ -179,6 +205,15 @@ impl StudioState {
             .map(|s| s.id.clone());
 
         Self {
+            screen: AppScreen::Editor,
+            has_active_session: true,
+            home_tab: HomeSectionTab::Home,
+            home_selected_theme: project.theme.preset,
+            home_search: String::new(),
+            scratch_site_name: "My Studio Site".into(),
+            scratch_base_url: "https://example.com".into(),
+            scratch_pages_mode: 1,
+            recent_projects: RecentProjectsStore::load(),
             project,
             history: HistoryStack::new(100),
             selected_page_id: first_page_id,
@@ -216,6 +251,183 @@ impl StudioState {
             preview_server: None,
             preview_dirty: false,
         }
+    }
+
+    /// Initializes the studio on the Adobe-style Home / Start screen.
+    pub fn new_at_home() -> Self {
+        let mut state = Self::new(StarterTemplate::MinimalistPortfolio.build());
+        state.screen = AppScreen::Home;
+        state.has_active_session = false;
+        state
+    }
+
+    /// Opens an existing `.weysko` or `.weysko.json` project from disk and switches to Editor.
+    pub fn open_project_from_path(&mut self, path: &Path) -> Result<(), String> {
+        let raw = fs::read_to_string(path)
+            .map_err(|e| format!("Failed to read '{}': {}", path.display(), e))?;
+        let proj = SiteProject::from_weysko_or_json(&raw)
+            .map_err(|e| format!("Invalid Weysko project '{}': {}", path.display(), e))?;
+
+        self.project = proj;
+        self.history.clear();
+        self.textures.clear();
+        self.drag_mode = None;
+        self.inline_edit = None;
+        self.current_file_path = Some(path.to_path_buf());
+        self.dirty = false;
+        self.preview_dirty = true;
+        self.selected_element_id = None;
+        self.selected_page_id = self
+            .project
+            .pages
+            .first()
+            .map(|p| p.id.clone())
+            .unwrap_or_default();
+        self.selected_section_id = self
+            .project
+            .pages
+            .first()
+            .and_then(|p| p.sections.first())
+            .map(|s| s.id.clone());
+        self.reconcile_selection();
+        self.recent_projects.record(&self.project, path);
+        self.recent_projects.save();
+        self.screen = AppScreen::Editor;
+        self.has_active_session = true;
+        self.auto_fit_zoom = true;
+        self.notify(format!("Opened {}", path.display()), false);
+        Ok(())
+    }
+
+    /// Starts a fresh project from a template + selected style and enters the Editor.
+    pub fn launch_new_from_template(
+        &mut self,
+        tmpl: StarterTemplate,
+        theme: PresetTheme,
+        custom_name: Option<&str>,
+    ) {
+        self.project = tmpl.build_with_theme(theme, custom_name);
+        self.history.clear();
+        self.textures.clear();
+        self.drag_mode = None;
+        self.inline_edit = None;
+        self.current_file_path = None;
+        self.dirty = false;
+        self.preview_dirty = true;
+        self.selected_element_id = None;
+        self.selected_page_id = self
+            .project
+            .pages
+            .first()
+            .map(|p| p.id.clone())
+            .unwrap_or_default();
+        self.selected_section_id = self
+            .project
+            .pages
+            .first()
+            .and_then(|p| p.sections.first())
+            .map(|s| s.id.clone());
+        self.confirm_template = None;
+        self.screen = AppScreen::Editor;
+        self.has_active_session = true;
+        self.auto_fit_zoom = true;
+        self.notify(
+            format!("Started {} ({})", tmpl.label(), theme.label()),
+            false,
+        );
+    }
+
+    /// Creates a custom site from the "New from Scratch" Home form and opens the Editor.
+    pub fn create_from_scratch(&mut self) {
+        let name = if self.scratch_site_name.trim().is_empty() {
+            "Untitled Site".to_string()
+        } else {
+            self.scratch_site_name.trim().to_string()
+        };
+        let tokens = self.home_selected_theme.to_tokens();
+        let mut proj = SiteProject::new(&name, tokens.clone());
+        let trimmed_url = self.scratch_base_url.trim();
+        if !trimmed_url.is_empty() {
+            proj.base_url = trimmed_url.to_string();
+        }
+        proj.pages.clear();
+
+        let mut home = Page::new("Home", "index");
+        home.sections = match self.scratch_pages_mode {
+            0 => vec![
+                SectionPreset::NavbarStrip.build(&tokens),
+                SectionPreset::BlankSection.build(&tokens),
+                SectionPreset::FooterStrip.build(&tokens),
+            ],
+            1 => vec![
+                SectionPreset::NavbarStrip.build(&tokens),
+                SectionPreset::HeroCentered.build(&tokens),
+                SectionPreset::FeaturesGrid.build(&tokens),
+                SectionPreset::FooterStrip.build(&tokens),
+            ],
+            _ => vec![
+                SectionPreset::NavbarStrip.build(&tokens),
+                SectionPreset::HeroSplit.build(&tokens),
+                SectionPreset::FeaturesGrid.build(&tokens),
+                SectionPreset::CtaBanner.build(&tokens),
+                SectionPreset::FooterStrip.build(&tokens),
+            ],
+        };
+        proj.pages.push(home);
+
+        if self.scratch_pages_mode >= 2 {
+            let mut about = Page::new("About", "about");
+            about.sections = vec![
+                SectionPreset::NavbarStrip.build(&tokens),
+                SectionPreset::AboutSplit.build(&tokens),
+                SectionPreset::FooterStrip.build(&tokens),
+            ];
+            let mut contact = Page::new("Contact", "contact");
+            contact.sections = vec![
+                SectionPreset::NavbarStrip.build(&tokens),
+                SectionPreset::ContactStrip.build(&tokens),
+                SectionPreset::FooterStrip.build(&tokens),
+            ];
+            proj.pages.extend([about, contact]);
+        }
+
+        // Customize nav brand to match user's site name
+        let brand = name.to_ascii_uppercase();
+        for page in &mut proj.pages {
+            for sec in &mut page.sections {
+                for el in &mut sec.elements {
+                    if el.kind == ElementKind::Navbar {
+                        el.content.nav_brand = brand.clone();
+                    }
+                }
+            }
+        }
+
+        self.project = proj;
+        self.history.clear();
+        self.textures.clear();
+        self.drag_mode = None;
+        self.inline_edit = None;
+        self.current_file_path = None;
+        self.dirty = false;
+        self.preview_dirty = true;
+        self.selected_element_id = None;
+        self.selected_page_id = self
+            .project
+            .pages
+            .first()
+            .map(|p| p.id.clone())
+            .unwrap_or_default();
+        self.selected_section_id = self
+            .project
+            .pages
+            .first()
+            .and_then(|p| p.sections.first())
+            .map(|s| s.id.clone());
+        self.screen = AppScreen::Editor;
+        self.has_active_session = true;
+        self.auto_fit_zoom = true;
+        self.notify(format!("Created '{}' in Studio", name), false);
     }
 
     pub fn push_undo_snapshot(&mut self) {
@@ -364,7 +576,8 @@ impl StudioState {
                 let mut el = Element::new_default(kind, &tokens, next_z);
                 if !el.full_width {
                     let count_offset = ((sec.elements.len() % 5) as f32) * 18.0;
-                    el.rect.x = ((1200.0 - el.rect.w) * 0.5 + count_offset).clamp(24.0, 1160.0 - el.rect.w.min(1100.0));
+                    el.rect.x = ((1200.0 - el.rect.w) * 0.5 + count_offset)
+                        .clamp(24.0, 1160.0 - el.rect.w.min(1100.0));
                     el.rect.y = (40.0 + count_offset).min((sec.height - el.rect.h).max(20.0));
                 }
                 let el_id = el.id.clone();
@@ -398,7 +611,10 @@ impl StudioState {
                         .and_then(|sid| page.sections.iter().position(|s| s.id == sid))
                         .map(|i| i + 1)
                         .unwrap_or(page.sections.len());
-                    page.sections.insert(insert_idx, std::mem::replace(&mut new_sec, SectionPreset::BlankSection.build(&tokens)));
+                    page.sections.insert(
+                        insert_idx,
+                        std::mem::replace(&mut new_sec, SectionPreset::BlankSection.build(&tokens)),
+                    );
                 }
             }
             self.selected_section_id = Some(new_sec_id);

@@ -3673,7 +3673,7 @@ checksum = "a28ac98ddc8b9274cb41bb4d9d4d5c425b6020c50c46f25559911905610b4a88"
 
 [[package]]
 name = "weysko"
-version = "1.2.0"
+version = "1.3.0"
 dependencies = [
  "base64",
  "eframe",
@@ -3691,7 +3691,7 @@ dependencies = [
 
 [[package]]
 name = "weysko-installer"
-version = "1.2.0"
+version = "1.3.0"
 dependencies = [
  "eframe",
  "egui",

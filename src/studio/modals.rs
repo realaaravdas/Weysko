@@ -1,7 +1,8 @@
 use egui::{Align2, Color32, CornerRadius, Frame, Margin, RichText, ScrollArea, Stroke};
 
 use crate::generator::exporter::{
-    export_to_folder, export_to_single_file, export_to_zip, generate_google_sites_embed,
+    export_to_folder, export_to_single_file, export_to_weysko_file, export_to_zip,
+    generate_google_sites_embed,
 };
 use crate::model::{sanitize_slug, Page};
 use crate::templates::SectionPreset;
@@ -32,7 +33,7 @@ fn draw_export_modal(ctx: &egui::Context, state: &mut StudioState) {
         .collapsible(false)
         .resizable(false)
         .anchor(Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
-        .fixed_size(egui::vec2(560.0, 440.0))
+        .fixed_size(egui::vec2(620.0, 450.0))
         .frame(
             Frame::new()
                 .fill(BG_PANEL)
@@ -42,7 +43,7 @@ fn draw_export_modal(ctx: &egui::Context, state: &mut StudioState) {
         )
         .show(ctx, |ui| {
             ui.label(
-                RichText::new("Compile 100% deterministic HTML5, CSS3 & vanilla JS with zero external runtime lock-in.")
+                RichText::new("Compile 100% deterministic HTML5, CSS3 & vanilla JS or save a portable .weysko project package.")
                     .color(TEXT_MUTED)
                     .size(12.0),
             );
@@ -56,6 +57,7 @@ fn draw_export_modal(ctx: &egui::Context, state: &mut StudioState) {
                     (ExportModalTab::Zip, "ZIP Archive"),
                     (ExportModalTab::SingleFile, "Single-File HTML"),
                     (ExportModalTab::GoogleSites, "Google Sites"),
+                    (ExportModalTab::WeyskoFile, ".weysko File"),
                 ],
             );
             ui.add_space(12.0);
@@ -215,6 +217,60 @@ fn draw_export_modal(ctx: &egui::Context, state: &mut StudioState) {
                                 .desired_width(f32::INFINITY),
                         );
                     });
+                }
+                ExportModalTab::WeyskoFile => {
+                    section_heading(ui, "Portable .weysko Editable Project File");
+                    ui.label(
+                        RichText::new("Saves the complete editable website into a single .weysko file preserving all pages, sections, design tokens, breakpoint overrides, and embedded media assets. Re-open later in Weysko Studio or share across Windows, macOS & Linux.")
+                            .color(TEXT_MUTED)
+                            .size(12.0),
+                    );
+                    ui.add_space(10.0);
+                    let elem_count: usize = state
+                        .project
+                        .pages
+                        .iter()
+                        .flat_map(|p| p.sections.iter())
+                        .map(|s| s.elements.len())
+                        .sum();
+                    ui.label(
+                        RichText::new(format!(
+                            "Bundle contents: {} page(s), {} element(s), {} embedded asset(s), theme '{}'",
+                            state.project.pages.len(),
+                            elem_count,
+                            state.project.assets.len(),
+                            state.project.theme.preset.label()
+                        ))
+                        .color(TEXT_DIM)
+                        .size(11.5),
+                    );
+                    ui.add_space(14.0);
+                    if primary_white_button(ui, "Export .weysko File").clicked() {
+                        let default_file = format!("{}.weysko", sanitize_slug(&state.project.name));
+                        if let Some(path) = rfd::FileDialog::new()
+                            .set_file_name(&default_file)
+                            .add_filter("Weysko Project", &["weysko"])
+                            .save_file()
+                        {
+                            match export_to_weysko_file(&state.project, &path) {
+                                Ok(summary) => {
+                                    state.current_file_path = Some(path.clone());
+                                    state.dirty = false;
+                                    state.recent_projects.record(&state.project, &path);
+                                    state.recent_projects.save();
+                                    state.notify(
+                                        format!(
+                                            "Exported .weysko file ({} KB) to {}",
+                                            (summary.total_bytes / 1024).max(1),
+                                            summary.destination.display()
+                                        ),
+                                        false,
+                                    );
+                                }
+                                Err(e) => state.notify(format!("Export failed: {}", e), true),
+                            }
+                        }
+                    }
                 }
             }
         });
@@ -393,8 +449,8 @@ fn draw_shortcuts_modal(ctx: &egui::Context, state: &mut StudioState) {
                 ("Ctrl+Z / Ctrl+Y", "Undo / Redo"),
                 ("Ctrl+C / Ctrl+V / Ctrl+D", "Copy / Paste / Duplicate element"),
                 ("Delete / Backspace", "Delete selected element"),
-                ("Ctrl+S / Ctrl+Shift+S", "Save / Save As (.weysko.json)"),
-                ("Ctrl+= / Ctrl+- / Ctrl+0", "Zoom in / out / reset 85%"),
+                ("Ctrl+S / Ctrl+Shift+S", "Save / Save As (.weysko)"),
+                ("Ctrl+= / Ctrl+- / Ctrl+0", "Zoom in / out / auto-fit canvas"),
                 ("F1", "Toggle this shortcuts reference"),
             ] {
                 ui.horizontal(|ui| {
@@ -420,7 +476,7 @@ fn draw_toast(ctx: &egui::Context, state: &mut StudioState) {
     }
 
     egui::Area::new(egui::Id::new("weysko_toast_area"))
-        .anchor(Align2::RIGHT_BOTTOM, egui::vec2(-20.0, -20.0))
+        .anchor(Align2::RIGHT_BOTTOM, egui::vec2(-20.0, -34.0))
         .show(ctx, |ui| {
             let stroke_col = if toast.is_error { DANGER_INK } else { SUCCESS_INK };
             Frame::new()

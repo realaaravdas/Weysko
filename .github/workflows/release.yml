@@ -1,0 +1,281 @@
+name: Release Weysko Studio
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g. v1.3.0)"
+        required: true
+        default: "v1.3.0"
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    name: Build Windows Setup & Portable ZIP
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Build Weysko Studio & Installer
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          cargo build --release -p weysko
+          cargo build --release -p weysko-installer
+
+      - name: Package Windows Release Assets
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $tag = "${{ github.event.inputs.tag || github.ref_name }}"
+          New-Item -ItemType Directory -Force -Path dist, stage | Out-Null
+          Copy-Item target/release/weysko-setup.exe "dist/weysko-$tag-windows-x86_64-setup.exe"
+          Copy-Item target/release/weysko.exe stage/
+          Copy-Item README.md, LICENSE, assets/weysko.ico stage/
+          if (Test-Path examples/meridian-cloud.weysko) {
+            Copy-Item examples/meridian-cloud.weysko stage/
+          }
+          Compress-Archive -Path stage/* -DestinationPath "dist/weysko-$tag-windows-x86_64-portable.zip" -Force
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-windows
+          path: dist/*
+
+  build-macos:
+    name: Build macOS Application & DMG
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Build Weysko binary (macOS)
+        run: cargo build --release --bin weysko
+
+      - name: Assemble Weysko.app & DMG
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          VER="${TAG#v}"
+          mkdir -p dist Weysko.app/Contents/MacOS Weysko.app/Contents/Resources Weysko.iconset
+
+          cp target/release/weysko Weysko.app/Contents/MacOS/weysko
+          chmod +x Weysko.app/Contents/MacOS/weysko
+
+          sips -z 16 16     assets/weysko-512.png --out Weysko.iconset/icon_16x16.png
+          sips -z 32 32     assets/weysko-512.png --out Weysko.iconset/icon_16x16@2x.png
+          sips -z 32 32     assets/weysko-512.png --out Weysko.iconset/icon_32x32.png
+          sips -z 64 64     assets/weysko-512.png --out Weysko.iconset/icon_32x32@2x.png
+          sips -z 128 128   assets/weysko-512.png --out Weysko.iconset/icon_128x128.png
+          sips -z 256 256   assets/weysko-512.png --out Weysko.iconset/icon_128x128@2x.png
+          sips -z 256 256   assets/weysko-512.png --out Weysko.iconset/icon_256x256.png
+          sips -z 512 512   assets/weysko-512.png --out Weysko.iconset/icon_256x256@2x.png
+          sips -z 512 512   assets/weysko-512.png --out Weysko.iconset/icon_512x512.png
+          cp assets/weysko-512.png Weysko.iconset/icon_512x512@2x.png
+          iconutil -c icns Weysko.iconset -o Weysko.app/Contents/Resources/weysko.icns
+
+          cat > Weysko.app/Contents/Info.plist <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleName</key>
+            <string>Weysko</string>
+            <key>CFBundleDisplayName</key>
+            <string>Weysko Visual Website Studio</string>
+            <key>CFBundleIdentifier</key>
+            <string>dev.weysko.studio</string>
+            <key>CFBundleVersion</key>
+            <string>${VER}</string>
+            <key>CFBundleShortVersionString</key>
+            <string>${VER}</string>
+            <key>CFBundleExecutable</key>
+            <string>weysko</string>
+            <key>CFBundleIconFile</key>
+            <string>weysko.icns</string>
+            <key>CFBundlePackageType</key>
+            <string>APPL</string>
+            <key>NSHighResolutionCapable</key>
+            <true/>
+            <key>CFBundleDocumentTypes</key>
+            <array>
+              <dict>
+                <key>CFBundleTypeName</key>
+                <string>Weysko Project</string>
+                <key>CFBundleTypeRole</key>
+                <string>Editor</string>
+                <key>CFBundleTypeExtensions</key>
+                <array>
+                  <string>weysko</string>
+                </array>
+              </dict>
+            </array>
+          </dict>
+          </plist>
+          EOF
+
+          mkdir -p dmg_root
+          cp -R Weysko.app dmg_root/
+          ln -s /Applications dmg_root/Applications
+          hdiutil create -volname "Weysko" -srcfolder dmg_root -ov -format UDZO "dist/weysko-${TAG}-macos-arm64.dmg"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-macos
+          path: dist/*
+
+  build-linux:
+    name: Build Linux AppImage, .deb & Tarball
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Linux GUI & packaging dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgtk-3-dev \
+            libxcb-render0-dev \
+            libxcb-shape0-dev \
+            libxcb-xfixes0-dev \
+            libxkbcommon-dev \
+            libgl1-mesa-dev \
+            libwayland-dev \
+            libxrandr-dev \
+            libxi-dev \
+            libxcursor-dev \
+            libxinerama-dev \
+            pkg-config \
+            file \
+            desktop-file-utils
+
+      - name: Build Weysko binary (Linux)
+        run: cargo build --release --bin weysko
+
+      - name: Package .deb, .AppImage & .tar.gz
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          VER="${TAG#v}"
+          mkdir -p dist
+
+          # 1. Debian (.deb) package
+          DEB_DIR="deb_pkg"
+          mkdir -p \
+            "$DEB_DIR/DEBIAN" \
+            "$DEB_DIR/usr/bin" \
+            "$DEB_DIR/usr/share/applications" \
+            "$DEB_DIR/usr/share/icons/hicolor/512x512/apps" \
+            "$DEB_DIR/usr/share/mime/packages"
+
+          cp target/release/weysko "$DEB_DIR/usr/bin/weysko"
+          chmod 755 "$DEB_DIR/usr/bin/weysko"
+          cp assets/weysko-512.png "$DEB_DIR/usr/share/icons/hicolor/512x512/apps/weysko.png"
+
+          cat > "$DEB_DIR/DEBIAN/control" <<EOF
+          Package: weysko
+          Version: ${VER}
+          Section: web
+          Priority: optional
+          Architecture: amd64
+          Maintainer: Weysko Project <realaaravdas@users.noreply.github.com>
+          Depends: libgtk-3-0, libxcb1, libxkbcommon0, libgl1
+          Description: Pure-Rust, zero-AI visual website studio and static site compiler
+          EOF
+
+          cat > "$DEB_DIR/usr/share/applications/weysko.desktop" <<EOF
+          [Desktop Entry]
+          Type=Application
+          Name=Weysko
+          Comment=Pure-Rust, zero-AI visual website studio and static site compiler
+          Exec=/usr/bin/weysko %f
+          Icon=weysko
+          Categories=Development;WebDevelopment;Graphics;
+          Terminal=false
+          MimeType=application/x-weysko;
+          EOF
+
+          cat > "$DEB_DIR/usr/share/mime/packages/weysko.xml" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+            <mime-type type="application/x-weysko">
+              <comment>Weysko Website Project</comment>
+              <glob pattern="*.weysko"/>
+            </mime-type>
+          </mime-info>
+          EOF
+
+          dpkg-deb --build "$DEB_DIR" "dist/weysko-${TAG}-linux-x86_64.deb"
+
+          # 2. Portable AppImage
+          APP_DIR="Weysko.AppDir"
+          mkdir -p "$APP_DIR/usr/bin" "$APP_DIR/usr/share/applications" "$APP_DIR/usr/share/icons/hicolor/512x512/apps"
+          cp target/release/weysko "$APP_DIR/usr/bin/weysko"
+          chmod 755 "$APP_DIR/usr/bin/weysko"
+          cp "$DEB_DIR/usr/share/applications/weysko.desktop" "$APP_DIR/weysko.desktop"
+          cp "$DEB_DIR/usr/share/applications/weysko.desktop" "$APP_DIR/usr/share/applications/weysko.desktop"
+          cp assets/weysko-512.png "$APP_DIR/weysko.png"
+          cp assets/weysko-512.png "$APP_DIR/.DirIcon"
+          cp assets/weysko-512.png "$APP_DIR/usr/share/icons/hicolor/512x512/apps/weysko.png"
+
+          cat > "$APP_DIR/AppRun" <<'EOF'
+          #!/bin/sh
+          HERE="$(dirname "$(readlink -f "$0")")"
+          exec "$HERE/usr/bin/weysko" "$@"
+          EOF
+          chmod +x "$APP_DIR/AppRun"
+
+          curl -sSL -o appimagetool-x86_64.AppImage "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage"
+          chmod +x appimagetool-x86_64.AppImage
+          ARCH=x86_64 ./appimagetool-x86_64.AppImage --appimage-extract-and-run "$APP_DIR" "dist/weysko-${TAG}-linux-x86_64.AppImage"
+
+          # 3. Portable tarball
+          mkdir -p tar_stage
+          cp target/release/weysko tar_stage/
+          cp README.md LICENSE assets/weysko-512.png tar_stage/
+          if [ -f examples/meridian-cloud.weysko ]; then
+            cp examples/meridian-cloud.weysko tar_stage/
+          fi
+          tar -C tar_stage -czf "dist/weysko-${TAG}-linux-x86_64.tar.gz" .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-linux
+          path: dist/*
+
+  publish-release:
+    name: Publish Cross-Platform GitHub Release
+    runs-on: ubuntu-latest
+    needs: [build-windows, build-macos, build-linux]
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: Generate SHA256 Checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd release-assets
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          name: "Weysko ${{ github.event.inputs.tag || github.ref_name }}"
+          generate_release_notes: true
+          files: release-assets/*

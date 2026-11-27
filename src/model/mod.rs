@@ -12,5 +12,6 @@ pub use element::{
 };
 pub use project::{
     sanitize_slug, MobileLayoutMode, Page, Section, SectionBackground, SiteProject, ViewportMode,
+    WeyskoFileEnvelope,
 };
 pub use theme::{available_font_families, ColorPalette, DesignTokens, PresetTheme, TypographyTokens};

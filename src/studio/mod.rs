@@ -1,8 +1,10 @@
 pub mod branding;
 pub mod canvas;
+pub mod home_screen;
 pub mod inspector;
 pub mod left_panel;
 pub mod modals;
+pub mod recent;
 pub mod state;
 pub mod style;
 pub mod top_bar;
@@ -11,7 +13,7 @@ use eframe::egui;
 
 use crate::templates::StarterTemplate;
 
-use self::state::StudioState;
+use self::state::{AppScreen, StudioState};
 use self::style::apply_slate_theme;
 
 /// Native `eframe` application hosting the Weysko Studio workspace.
@@ -28,11 +30,21 @@ impl WeyskoApp {
         }
     }
 
+    pub fn new_home() -> Self {
+        Self {
+            state: StudioState::new_at_home(),
+            theme_initialized: false,
+        }
+    }
+
     pub fn new_default() -> Self {
         Self::new(StarterTemplate::MinimalistPortfolio.build())
     }
 
     fn handle_shortcuts(&mut self, ctx: &egui::Context) {
+        if self.state.screen == AppScreen::Home {
+            return;
+        }
         // Do not intercept shortcuts when typing in text fields or inline canvas edit.
         if ctx.wants_keyboard_input() || self.state.inline_edit.is_some() {
             return;
@@ -174,14 +186,22 @@ impl eframe::App for WeyskoApp {
             self.theme_initialized = true;
         }
 
-        self.handle_shortcuts(ctx);
-        self.state.ensure_asset_textures(ctx);
-        top_bar::draw_top_bar(ctx, &mut self.state);
-        left_panel::draw_left_panel(ctx, &mut self.state);
-        inspector::draw_inspector(ctx, &mut self.state);
-        canvas::draw_canvas(ctx, &mut self.state);
-        modals::draw_modals_and_toasts(ctx, &mut self.state);
-
-        self.state.sync_preview_if_running();
+        match self.state.screen {
+            AppScreen::Home => {
+                home_screen::draw_home_screen(ctx, &mut self.state);
+                modals::draw_modals_and_toasts(ctx, &mut self.state);
+            }
+            AppScreen::Editor => {
+                self.handle_shortcuts(ctx);
+                self.state.ensure_asset_textures(ctx);
+                top_bar::draw_top_bar(ctx, &mut self.state);
+                top_bar::draw_status_bar(ctx, &self.state);
+                left_panel::draw_left_panel(ctx, &mut self.state);
+                inspector::draw_inspector(ctx, &mut self.state);
+                canvas::draw_canvas(ctx, &mut self.state);
+                modals::draw_modals_and_toasts(ctx, &mut self.state);
+                self.state.sync_preview_if_running();
+            }
+        }
     }
 }

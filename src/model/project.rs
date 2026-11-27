@@ -190,6 +190,16 @@ pub struct SiteProject {
     pub pages: Vec<Page>,
 }
 
+/// Portable `.weysko` project envelope bundling format metadata with the full `SiteProject`.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct WeyskoFileEnvelope {
+    pub format: String,
+    pub format_version: u32,
+    pub app_version: String,
+    pub exported_at_unix: u64,
+    pub project: SiteProject,
+}
+
 impl SiteProject {
     pub const CURRENT_SCHEMA_VERSION: u32 = 1;
 
@@ -211,6 +221,32 @@ impl SiteProject {
 
     pub fn from_json(raw: &str) -> Result<Self, serde_json::Error> {
         serde_json::from_str(raw)
+    }
+
+    /// Serializes the project wrapped in the native `.weysko` portable file envelope.
+    pub fn to_weysko_pretty(&self) -> Result<String, serde_json::Error> {
+        let exported_at_unix = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_secs())
+            .unwrap_or(0);
+        let env = WeyskoFileEnvelope {
+            format: "weysko-project".to_string(),
+            format_version: 1,
+            app_version: env!("CARGO_PKG_VERSION").to_string(),
+            exported_at_unix,
+            project: self.clone(),
+        };
+        serde_json::to_string_pretty(&env)
+    }
+
+    /// Parses either a `.weysko` envelope file or a legacy `.weysko.json` raw `SiteProject`.
+    pub fn from_weysko_or_json(raw: &str) -> Result<Self, serde_json::Error> {
+        if let Ok(env) = serde_json::from_str::<WeyskoFileEnvelope>(raw) {
+            if env.format == "weysko-project" {
+                return Ok(env.project);
+            }
+        }
+        Self::from_json(raw)
     }
 
     pub fn find_page(&self, page_id: &str) -> Option<&Page> {
@@ -300,5 +336,13 @@ mod tests {
         let parsed = SiteProject::from_json(&json).unwrap();
         assert_eq!(parsed.name, "Slate Studio");
         assert_eq!(parsed.pages[0].sections[0].elements[0].id, el_id);
+
+        // Verify .weysko envelope round-trip & backwards compatibility with legacy raw JSON
+        let weysko_raw = project.to_weysko_pretty().unwrap();
+        assert!(weysko_raw.contains("\"format\": \"weysko-project\""));
+        let parsed_env = SiteProject::from_weysko_or_json(&weysko_raw).unwrap();
+        assert_eq!(parsed_env.name, "Slate Studio");
+        let parsed_legacy = SiteProject::from_weysko_or_json(&json).unwrap();
+        assert_eq!(parsed_legacy.name, "Slate Studio");
     }
 }

@@ -4,88 +4,83 @@
 
 # Weysko
 
-**Official Website:** [https://realaaravdas.github.io/Weysko/](https://realaaravdas.github.io/Weysko/) · **Releases:** [GitHub Releases](https://github.com/realaaravdas/Weysko/releases)
+**Official Website:** [https://realaaravdas.github.io/Weysko/](https://realaaravdas.github.io/Weysko/) · **Guide & Tutorial:** [User Guide](https://realaaravdas.github.io/Weysko/guide.html) · **Web Demo:** [Launch Demo](https://realaaravdas.github.io/Weysko/demo.html) · **Releases:** [GitHub Releases](https://github.com/realaaravdas/Weysko/releases)
 
-**Weysko** is a 100% pure-Rust, zero-AI visual website studio and static site compiler inspired by classic Wix Studio, built with a modern, minimalist **dark-and-white slate** workspace.
+**Weysko** is a 100% pure-Rust, zero-AI visual website studio and static site compiler inspired by classic Wix Studio, built with a minimalist **dark-and-white slate** workspace.
 
-Design complete multi-page websites visually using drag-and-drop positioning, pre-built section strips, global design tokens, and responsive breakpoint previews — then compile deterministically into clean HTML5, CSS3, and vanilla JavaScript ready to launch on any web server, static host, or Google Sites.
+Start from an Adobe-style Creative Studio launcher to pick a website visual style, import a `.weysko` project, reopen past projects, or start from templates and scratch — then design visually and export clean HTML5, CSS3, and vanilla JavaScript ready for any server or Google Sites.
 
 ---
 
-## Key Features
+## Key Features (v1.3.0)
 
 - **Zero AI, 100% Pure Rust**: Deterministic visual builder and static compiler powered by `eframe`/`egui`, `serde_json`, `image`, `zip`, and `tiny_http`.
-- **Dark & White Minimalist Slate Studio**: Deep obsidian-slate canvas (`#090D16`), slate-900 panels (`#0F172A`), crisp white primary actions (`#FFFFFF`), and subtle dot-grid alignment.
-- **Interactive WYSIWYG Canvas**:
+- **Creative Studio Start Screen**: Choose from 6 visual styles, browse wireframe starter templates (including the 3-page **Meridian Cloud** example), build custom multi-page skeletons from scratch, import `.weysko` files, or reopen recent projects.
+- **Portable `.weysko` Project Format**: Self-contained project envelope preserving all pages, sections, design tokens, responsive rules, and base64 assets (backwards-compatible with `.weysko.json`).
+- **Interactive WYSIWYG Canvas & Polished Status Bar**:
   - Click to select elements or sections; double-click text elements (`Heading`, `Paragraph`, `Button`, `Badge`) for inline canvas editing.
-  - Drag to reposition with optional **8px Grid Snap** and **Smart Alignment Guides**.
-  - **8-point resize handles** on elements and draggable bottom handles on section heights.
-  - **Responsive Breakpoint Editor**: Switch between `Desktop (1280px)`, `Tablet (768px)`, and `Mobile (390px)` with per-breakpoint geometry overrides and Auto-Stack mobile layout.
-- **16 Customizable Element Types**:
-  - `Heading (H1–H6)`, `Paragraph`, `Button`, `Badge`, `Image`, `Box / Container`, `Divider`, `Navbar`, `Footer`, `Contact Form`, `List`, `Feature Card`, `FAQ Accordion`, `Video Embed (YouTube/Vimeo/MP4)`, `Custom HTML`, and `Social Links`.
-- **13 Pre-Built Wix-Style Section Strips & 5 Starter Templates**:
-  - `Minimalist Portfolio`, `SaaS Product Landing`, `Design Studio & Agency`, `Personal Bio & Resume`, and `Blank Canvas`.
-- **6 Curated Theme Presets + Deep Customization**:
-  - `Obsidian Slate`, `Pure Editorial`, `Midnight Mono`, `Nordic Steel`, `Warm Alabaster`, and `Carbon Ink`.
-  - Customize global color tokens, Google Fonts / system typography, border radius, max content width, hover effects, entrance animations, box shadows, and custom global or per-element CSS.
-- **Embedded Media Library**: Import PNG, JPG, WebP, GIF, or SVG images directly into your `.weysko.json` project — exported cleanly to `assets/` or inline `data:` URIs.
-- **Built-In Live Preview Server**: One-click pure-Rust HTTP server (`tiny_http`) serving your compiled site with instant updates.
+  - Drag to reposition with optional **8px Grid Snap**, **Smart Alignment Guides**, and **8-point resize handles**.
+  - **Responsive Breakpoint Editor**: `Desktop (1280px)`, `Tablet (768px)`, and `Mobile (390px)` previews with Auto-Stack mobile reflow.
+- **16 Native Elements & 13 Section Strips**: `Heading`, `Paragraph`, `Button`, `Badge`, `Image`, `Box`, `Divider`, `Navbar`, `Footer`, `Contact Form`, `List`, `Feature Card`, `FAQ Accordion`, `Video Embed`, `Custom HTML`, and `Social Links`.
+- **6 Starter Templates**: `Meridian Cloud (Example)`, `Minimalist Portfolio`, `SaaS Product Landing`, `Design Studio & Agency`, `Personal Bio & Resume`, and `Blank Canvas`.
+- **Cross-Platform Desktop Builds**: Automated GitHub Actions releases for **Windows** (`.exe` Setup & Portable ZIP), **macOS** (`.dmg`), and **Linux** (`.AppImage`, `.deb`, `.tar.gz`).
 
 ---
 
-## Installing & Running Weysko
+## Installing & Running Weysko v1.3.0
 
-### Windows Installer (Recommended)
-Download **`weysko-v1.2.0-windows-x86_64-setup.exe`** from [GitHub Releases](https://github.com/realaaravdas/Weysko/releases/latest) to install Weysko with Start Menu & Desktop shortcuts, `.weysko.json` file association, User `PATH` CLI registration, and a Windows Apps & Features uninstaller.
+- **Windows:** Download **`weysko-v1.3.0-windows-x86_64-setup.exe`** from [GitHub Releases](https://github.com/realaaravdas/Weysko/releases/latest) for Start Menu & Desktop shortcuts, `.weysko` / `.weysko.json` file associations, User `PATH` CLI registration, and uninstaller.
+- **macOS (Apple Silicon):** Download **`weysko-v1.3.0-macos-arm64.dmg`**, open, and drag **Weysko.app** into Applications.
+- **Linux (`x86_64`):** Download **`weysko-v1.3.0-linux-x86_64.AppImage`** (`chmod +x` and run) or install **`weysko-v1.3.0-linux-x86_64.deb`**.
 
 ### Build from Source
 ```bash
-# Launch the visual studio GUI
-cargo run --release
+# On Debian/Ubuntu Linux, install GUI & GL headers first:
+sudo apt-get update && sudo apt-get install -y \
+  libgtk-3-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev \
+  libxkbcommon-dev libgl1-mesa-dev libwayland-dev libxrandr-dev pkg-config
+
+# Build & launch the visual studio GUI
+cargo run --release --bin weysko
+
+# Open an existing .weysko or .weysko.json project file directly
+cargo run --release --bin weysko -- examples/meridian-cloud.weysko
 
 # Or build both Weysko Studio and the Windows Setup Installer
-./scripts/build-installer.ps1
-```
-
-Or open an existing project file directly:
-```bash
-cargo run --release -- path/to/site.weysko.json
+powershell -ExecutionPolicy Bypass -File .\scripts\build-installer.ps1
 ```
 
 ---
 
 ## Exporting & Launching Your Website
 
-Click **Export / Publish** in the top-right corner of the studio to choose from four export targets:
+Click **Export / Publish** in the studio to choose from five targets:
 
-1. **Static Folder** — Writes `index.html`, secondary `<slug>.html` pages, `404.html`, `styles.css`, `site.js`, `assets/*`, plus optional `sitemap.xml`, `robots.txt`, and `.nojekyll`. Upload to **GitHub Pages, Nginx, Apache, AWS S3, Cloudflare Pages, or Vercel**.
-2. **ZIP Archive** — Packages the full static site into a standard `.zip` ready for **Netlify Drop**, **Cloudflare Pages**, or **cPanel**.
-3. **Single-File HTML** — Compiles all pages, CSS, JavaScript, and base64-encoded images into one self-contained `.html` file with client-side page switching.
-4. **Google Sites Embed**:
-   - Select the **Google Sites** tab in the Export modal.
-   - Click **Copy Embed HTML to Clipboard**.
-   - In Google Sites, open **Insert → Embed → Embed code**, paste the bundle, click **Next → Insert**, and resize the embed frame full-width.
+1. **`.weysko` Project File** — Portable editable bundle preserving pages, design tokens, breakpoints, and assets.
+2. **Static Folder** — Multi-page HTML5, `styles.css`, `site.js`, `assets/*`, `404.html`, `sitemap.xml`, `robots.txt`, and `.nojekyll`.
+3. **ZIP Archive** — Ready for **Netlify Drop**, **Cloudflare Pages**, or **cPanel**.
+4. **Single-File HTML** — All pages, CSS, JavaScript, and base64 media in one portable HTML document.
+5. **Google Sites Embed** — Click **Copy Embed HTML to Clipboard** and paste into Google Sites via **Insert → Embed → Embed code**.
 
 ---
 
 ## Headless CLI Mode
 
-Weysko also ships with a scriptable CLI for CI/CD pipelines and rapid exports:
-
 ```bash
-# Create a new project JSON from a starter template
-cargo run -- --init-template saas --out my-site.weysko.json
+# Create a portable .weysko project file from a template
+weysko --init-template meridian --out meridian-cloud.weysko
 
-# Export a project or template to a static folder, ZIP, or single-file HTML
-cargo run -- --export template:saas --out ./dist --format folder
-cargo run -- --export my-site.weysko.json --out ./dist/site.zip --format zip
-cargo run -- --export my-site.weysko.json --out ./dist/embed.html --format google-sites
+# Export to static folder, ZIP, Google Sites embed, or .weysko bundle
+weysko --export meridian-cloud.weysko --out ./dist --format folder
+weysko --export meridian-cloud.weysko --out ./site.zip --format zip
+weysko --export meridian-cloud.weysko --out ./embed.html --format google-sites
+weysko --export meridian-cloud.weysko --out ./backup.weysko --format weysko
 
 # Serve a compiled site over localhost
-cargo run -- --serve template:portfolio --port 8080
+weysko --serve meridian-cloud.weysko --port 8080
 ```
 
-Available template keys: `portfolio`, `saas`, `agency`, `bio`, `blank`.
+Available template keys: `meridian`, `portfolio`, `saas`, `agency`, `bio`, `blank`.
 
 ---
 
@@ -93,13 +88,11 @@ Available template keys: `portfolio`, `saas`, `agency`, `bio`, `blank`.
 
 | Shortcut | Action |
 |---|---|
-| `Ctrl + Z` | Undo |
-| `Ctrl + Y` / `Ctrl + Shift + Z` | Redo |
-| `Ctrl + S` | Save project (`.weysko.json`) |
-| `Ctrl + Shift + S` | Save As |
-| `Ctrl + D` | Duplicate selected element |
-| `Ctrl + C` / `Ctrl + V` | Copy / Paste element |
+| `Ctrl + Z` / `Ctrl + Y` | Undo / Redo |
+| `Ctrl + S` / `Ctrl + Shift + S` | Save / Save As (`.weysko`) |
+| `Ctrl + C` / `Ctrl + V` / `Ctrl + D` | Copy / Paste / Duplicate element |
+| `Ctrl + =` / `Ctrl + -` / `Ctrl + 0` | Zoom in / out / auto-fit canvas |
 | `Arrow Keys` / `Shift + Arrow` | Nudge selected element (`1px` / `10px`) |
 | `Delete` / `Backspace` | Delete selected element |
-| `Escape` | Clear selection / Close modal |
 | `Double-click` on text | Edit text directly on canvas |
+| `F1` | Toggle shortcuts quick guide |

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weysko Web Demo — Interactive Visual Studio Preview</title>
+  <meta name="description" content="Try Weysko v1.3.0 in your browser: choose a website style, customize Meridian Cloud or starter templates, import or export .weysko files, and preview breakpoints.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="demo.css">
+</head>
+<body class="demo-body">
+  <header class="site-header" id="site-header">
+    <div class="ws-container header-main-inner">
+      <div class="header-left">
+        <a class="brand-lockup" href="index.html" aria-label="Weysko Home">
+          <img src="assets/logo.svg" alt="Weysko">
+        </a>
+        <nav class="main-nav" id="main-nav" aria-label="Primary Navigation">
+          <a href="index.html">Overview</a>
+          <a href="guide.html">Guide &amp; Tutorial</a>
+          <a href="example-site/index.html">Compiled Example</a>
+          <a class="is-active" href="demo.html">Web Demo</a>
+          <a class="mobile-nav-cta" href="https://github.com/realaaravdas/Weysko/releases/download/v1.3.0/weysko-v1.3.0-windows-x86_64-setup.exe">Download Desktop App</a>
+        </nav>
+      </div>
+      <div class="header-right">
+        <a class="btn-outline-enterprise" href="https://github.com/realaaravdas/Weysko/releases/download/v1.3.0/weysko-v1.3.0-windows-x86_64-setup.exe">Download v1.3.0</a>
+        <button class="mobile-menu-btn" id="mobile-menu-btn" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="main-nav">
+          <svg class="icon-menu" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M3 5.5H17M3 10H17M3 14.5H17" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+          </svg>
+          <svg class="icon-close" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M4.5 4.5L15.5 15.5M15.5 4.5L4.5 15.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="demo-shell">
+    <!-- START / HOME LAUNCHER VIEW -->
+    <section class="demo-home" id="demo-home-view">
+      <div class="demo-home-sidebar">
+        <div class="demo-rail-brand">
+          <span class="demo-rail-badge">INTERACTIVE WEB DEMO</span>
+          <h2>Weysko Studio</h2>
+          <p>Pure-Rust architecture simulated in browser JS. Exported <code>.weysko</code> files open directly in the desktop app.</p>
+        </div>
+        <div class="demo-rail-actions">
+          <button class="demo-btn-white" id="demo-start-scratch-btn" type="button">+ New From Scratch</button>
+          <label class="demo-btn-slate demo-file-label">
+            Import .weysko / .json
+            <input type="file" id="demo-import-input" accept=".weysko,.json,application/json" hidden>
+          </label>
+          <button class="demo-btn-accent is-hidden" id="demo-resume-btn" type="button">&larr; Back to Editor</button>
+        </div>
+        <div class="demo-rail-footer">
+          <a href="example-site/index.html">Open Compiled Meridian Cloud &rsaquo;</a>
+          <a href="guide.html#tutorial">Read Step-by-Step Tutorial &rsaquo;</a>
+        </div>
+      </div>
+
+      <div class="demo-home-main">
+        <div class="demo-home-head">
+          <div>
+            <h1>Start designing in Weysko Web Demo</h1>
+            <p>Choose your website visual style, pick a starter template, or load a <code>.weysko</code> project file.</p>
+          </div>
+          <button class="demo-btn-slate" id="demo-open-meridian-btn" type="button">Open Meridian Cloud Example</button>
+        </div>
+
+        <div class="demo-section-label">1. Choose Your Website Style</div>
+        <div class="demo-style-grid" id="demo-style-grid"></div>
+
+        <div class="demo-section-label">2. Launch a Template</div>
+        <div class="demo-template-grid" id="demo-template-grid"></div>
+      </div>
+    </section>
+
+    <!-- STUDIO EDITOR VIEW -->
+    <section class="demo-editor is-hidden" id="demo-editor-view">
+      <div class="demo-toolbar">
+        <div class="demo-toolbar-group">
+          <button class="demo-tool-btn" id="demo-go-home-btn" type="button">&larr; Home</button>
+          <input class="demo-name-input" id="demo-site-name" type="text" aria-label="Site Name">
+          <select class="demo-select" id="demo-page-select" aria-label="Active Page"></select>
+        </div>
+
+        <div class="demo-toolbar-group">
+          <div class="demo-vp-switch" role="group" aria-label="Viewport Breakpoint">
+            <button class="demo-vp-btn is-active" data-vp="desktop" type="button">Desktop</button>
+            <button class="demo-vp-btn" data-vp="tablet" type="button">Tablet</button>
+            <button class="demo-vp-btn" data-vp="mobile" type="button">Mobile</button>
+          </div>
+          <button class="demo-tool-btn is-active" id="demo-grid-toggle" type="button">Grid</button>
+        </div>
+
+        <div class="demo-toolbar-group">
+          <a class="demo-tool-btn" href="example-site/index.html" target="_blank" rel="noopener noreferrer">Compiled Output &rsaquo;</a>
+          <button class="demo-btn-white demo-btn-sm" id="demo-export-weysko-btn" type="button">Export .weysko</button>
+        </div>
+      </div>
+
+      <div class="demo-workspace">
+        <aside class="demo-left">
+          <div class="demo-panel-title">Add Element</div>
+          <div class="demo-add-grid">
+            <button class="demo-add-btn" data-add="heading" type="button">H1 Heading</button>
+            <button class="demo-add-btn" data-add="paragraph" type="button">Aa Paragraph</button>
+            <button class="demo-add-btn" data-add="button" type="button">[ ] Button</button>
+            <button class="demo-add-btn" data-add="badge" type="button">TAG Badge</button>
+            <button class="demo-add-btn" data-add="card" type="button">CRD Card</button>
+            <button class="demo-add-btn" data-add="divider" type="button">&mdash; Divider</button>
+          </div>
+
+          <div class="demo-panel-title" style="margin-top:16px;">Theme Preset</div>
+          <div class="demo-theme-pills" id="demo-editor-themes"></div>
+        </aside>
+
+        <div class="demo-canvas-wrap is-grid" id="demo-canvas-wrap">
+          <div class="demo-artboard" id="demo-artboard"></div>
+        </div>
+
+        <aside class="demo-inspector">
+          <div class="demo-panel-title">Inspector</div>
+          <div id="demo-inspector-body" class="demo-inspector-body">
+            <p class="demo-muted">Click any element on the canvas to edit text, styling, and geometry.</p>
+          </div>
+        </aside>
+      </div>
+
+      <div class="demo-statusbar" id="demo-statusbar">
+        <span id="demo-status-left">/index.html</span>
+        <span id="demo-status-right">Obsidian Slate</span>
+      </div>
+    </section>
+  </main>
+
+  <div class="demo-toast" id="demo-toast" role="status" aria-live="polite"></div>
+
+  <script src="demo.js"></script>
+</body>
+</html>
