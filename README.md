@@ -33,11 +33,18 @@ Design complete multi-page websites visually using drag-and-drop positioning, pr
 
 ---
 
-## Running Websir
+## Installing & Running Websir
 
-### Launch the Visual Studio GUI
+### Windows Installer (Recommended)
+Download **`websir-v1.1.0-windows-x86_64-setup.exe`** from [GitHub Releases](https://github.com/realaaravdas/Websir/releases/latest) to install Websir with Start Menu & Desktop shortcuts, `.websir.json` file association, User `PATH` CLI registration, and a Windows Apps & Features uninstaller.
+
+### Build from Source
 ```bash
+# Launch the visual studio GUI
 cargo run --release
+
+# Or build both Websir Studio and the Windows Setup Installer
+./scripts/build-installer.ps1
 ```
 
 Or open an existing project file directly:

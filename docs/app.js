@@ -99,8 +99,8 @@
     canvas: {
       title: 'Freeform WYSIWYG Canvas with 8px Snap & Smart Guides',
       desc: 'Drag elements, resize via 8-point handles, edit typography inline, and inspect live X/Y coordinates.',
-      ctaText: 'Download Websir v1.0.0',
-      ctaHref: 'https://github.com/realaaravdas/Websir/releases/latest',
+      ctaText: 'Download Installer v1.1.0',
+      ctaHref: 'https://github.com/realaaravdas/Websir/releases/download/v1.1.0/websir-v1.1.0-windows-x86_64-setup.exe',
       mode: 'studio',
       badge: 'Canvas /index.html',
       headline: 'Critical infrastructure for modern web publishing.',
